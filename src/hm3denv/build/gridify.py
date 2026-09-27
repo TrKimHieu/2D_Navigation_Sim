@@ -238,7 +238,8 @@ def run(ws: Path, out_dir: Path, robot: dict, scenes=None, params: GridParams | 
                 "shape": list(state.shape), "main_m2": round(main_m2, 2), "flags": flags}
         np.savez_compressed(out_dir / f"{map_id}.npz", grid=(state != FREE).astype(np.uint8),
                             state=state, main=main)
-        (out_dir / f"{map_id}.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
+        (out_dir / f"{map_id}.json").write_text(json.dumps(meta, indent=1), encoding="utf-8",
+                                                newline="\n")
         made[map_id] = meta
         log.info("  %s: %dx%d cells, offset (%d,%d) px, main %.0f m2 (%.0f%% of free)%s", map_id,
                  *state.shape, info["oy"], info["ox"], main_m2, info["main_frac"] * 100,

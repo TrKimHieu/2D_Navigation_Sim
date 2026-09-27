@@ -26,9 +26,9 @@ def snapshot_robot(root: Path, robot_id: str, raw: dict | None = None) -> None:
     dst = Path(root) / "robots" / f"{robot_id}.json"
     dst.parent.mkdir(parents=True, exist_ok=True)
     if raw is not None:
-        dst.write_text(json.dumps(raw, indent=1, ensure_ascii=False), encoding="utf-8")
+        dst.write_text(json.dumps(raw, indent=1, ensure_ascii=False), encoding="utf-8", newline="\n")
     else:
-        dst.write_text(preset_path(robot_id).read_text(encoding="utf-8"), encoding="utf-8")
+        dst.write_text(preset_path(robot_id).read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
 
 
 def write_manifest(root: Path, *, name: str, env: str, config: dict, splits: dict,

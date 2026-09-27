@@ -24,9 +24,10 @@ hm3denv turns each storey of a 3D building into a 2D navigation map and gives yo
 | Observation | LiDAR with the robot's real FOV and range + goal (distance, sin, cos) + velocity | LiDAR in cells |
 | Speed | ~0.3–0.6 ms per step (numba) | ~0.05 ms per step |
 
-Every start and goal was checked on the real 3D mesh: there is floor under the robot, its
-body touches nothing, the spot is indoors and it is connected to the goal. An oracle agent
-reaches 100 % of the tasks, so every task is solvable.
+Every start and goal is collision-free for the robot's real footprint and connected to the
+goal (for HM3D datasets it was also checked on the real 3D mesh: floor under the robot, nothing
+touching its body, indoors). An oracle agent reaches 100 % of the tasks, so every task is
+solvable.
 
 **Contents** —
 [Features](#features) ·
@@ -72,12 +73,18 @@ Python 3.10–3.12. The environments run on the CPU; a GPU is only useful for yo
 
 ```bash
 git clone https://github.com/TrKimHieu/2D_Navigation_Sim && cd 2D_Navigation_Sim
+python -m venv .venv
+source .venv/bin/activate                 # Windows (PowerShell): .venv\Scripts\Activate.ps1
 pip install ".[fast]"
 hm3d eval demo-svg --robot turtlebot4 --agent oracle     # works right away: 100 % success
 ```
 
 That is all: two small demo datasets ship with the package, so the environments run without
-downloading anything (see [Getting data](#getting-data)). Without cloning:
+downloading anything (see [Getting data](#getting-data)). Commands such as `hm3d` are available
+while the virtual environment is active; without one, if your shell says `hm3d` is not
+recognized, use `python -m hm3denv` instead. If PowerShell refuses to run `Activate.ps1`
+("running scripts is disabled"), run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once,
+or use `.venv\Scripts\activate.bat` from `cmd`. Without cloning:
 
 ```bash
 pip install "hm3denv[fast] @ git+https://github.com/TrKimHieu/2D_Navigation_Sim"
@@ -96,13 +103,10 @@ From a clone (for development):
 
 ```bash
 git clone https://github.com/TrKimHieu/2D_Navigation_Sim && cd 2D_Navigation_Sim
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\Activate.ps1
 pip install -e ".[fast,build,test]"
 pytest -m "not workspace"
 ```
-
-The `hm3d` command is installed with the package. If your Python scripts directory is not
-on `PATH`, use `python -m hm3denv` instead of `hm3d`.
 
 ## Getting data
 
@@ -133,20 +137,21 @@ Full datasets are hosted on Hugging Face:
 Access is gated and reviewed by hand; the HM3D-derived datasets are only shared with people who
 have been granted access to HM3D by Matterport.
 
-1. Request access with the form on the
+1. With a (free) Hugging Face account, request access with the form on the
    [dataset page](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim) and wait for
    the approval.
-2. Log in once: `hf auth login` (a *read* token is enough).
-3. Download by name:
+2. Install the download support, log in once, and download by name:
 
 ```bash
-pip install ".[fast,hub]"
-hm3d download                    # list the datasets you can download
+pip install ".[fast,hub]"        # adds huggingface_hub and its `hf` command
+hf auth login                    # once per machine
+hm3d download                    # list the datasets in the repository
 hm3d download isb-svg-v1 svg-v1  # -> ~/.hm3denv/datasets/ (or $HM3D_HOME/datasets)
 ```
 
 Downloaded datasets are validated against their manifest and then found by name:
-`gym.make("HM3D/Svg-v0", dataset="isb-svg-v1", robot="pal_tiago")`.
+`gym.make("HM3D/Svg-v0", dataset="isb-svg-v1", robot="pal_tiago")`. Without access approval,
+`hm3d download NAME` stops with an explanation and downloads nothing.
 
 ### Building your own
 

@@ -64,6 +64,9 @@ def download(names, dest: str | os.PathLike | None = None, token: str | None = N
             hub.snapshot_download(repo_id, repo_type="dataset", local_dir=dest, token=token,
                                   allow_patterns=[f"{n}/*" for n in todo])
         except (hub.errors.GatedRepoError, hub.errors.RepositoryNotFoundError) as e:
+            for n in todo:                        # nothing was downloaded: no empty folders
+                if (dest / n).is_dir() and not any(p.is_file() for p in (dest / n).rglob("*")):
+                    shutil.rmtree(dest / n)
             raise _access_error(e) from None
     out = []
     for n in names:

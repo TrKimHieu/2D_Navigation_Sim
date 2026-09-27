@@ -28,8 +28,9 @@ def test_dataset_by_name_via_env_var(svg_dataset, monkeypatch):
 
 
 def test_bundled_demo_datasets(monkeypatch):
-    """The demos ship with the package: found by name with nothing configured, valid, and
-    free of paths of the machine that built them."""
+    """The demos ship with the package: found by name with nothing configured, valid (also
+    after a git checkout: LF only, see .gitattributes), and free of paths of the machine
+    that built them."""
     monkeypatch.delenv("HM3D_DATASETS", raising=False)
     monkeypatch.delenv("HM3D_WORKSPACE", raising=False)
     for name, env_type in (("demo-svg", "svg"), ("demo-grid", "grid")):
@@ -38,6 +39,14 @@ def test_bundled_demo_datasets(monkeypatch):
         for f in ds.root.rglob("*"):
             if f.is_file():
                 assert b"IsaacProjects" not in f.read_bytes(), f
+                assert f.suffix not in (".json", ".svg") or b"\r" not in f.read_bytes(), f
+
+
+def test_dataset_files_have_lf_line_endings(tmp_path):
+    """Hashes must not depend on the OS that built the dataset."""
+    from hm3denv.dataset.schema import write_json
+    write_json(tmp_path / "a.json", {"x": [1, 2]})
+    assert b"\r" not in (tmp_path / "a.json").read_bytes()
 
 
 def test_splits_are_by_scene_and_deterministic():

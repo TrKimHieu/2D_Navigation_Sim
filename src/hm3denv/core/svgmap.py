@@ -117,8 +117,8 @@ class SvgMap:
                 f'\n  </g>\n</svg>\n')
 
     def save(self, path) -> None:
-        with open(path, "w", encoding="utf-8") as fh:
-            fh.write(self.to_svg())
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:   # same bytes on every OS
+            fh.write(self.to_svg().replace("\r\n", "\n"))
 
     @classmethod
     def load(cls, path) -> "SvgMap":

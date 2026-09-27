@@ -54,8 +54,9 @@ def split_of(splits: dict, map_id: str) -> str:
 
 
 def write_json(path: Path, obj) -> None:
+    """LF line endings on every OS: dataset files are hashed byte for byte."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(obj, indent=1, ensure_ascii=False), encoding="utf-8")
+    path.write_text(json.dumps(obj, indent=1, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 def read_tasks(path: Path) -> dict:

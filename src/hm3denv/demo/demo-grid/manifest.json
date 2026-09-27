@@ -230,12 +230,12 @@
   "grids/demo-S130_s0.npz": "f4e3ef985ef3130e4e6bbca3f4e6080745615b6dee82a1421fed9dfdd42a3039",
   "grids/demo-S133_s0.json": "d79efec6f302b08e590b9e3a8c227443835a54738585e519ec69b48754d50308",
   "grids/demo-S133_s0.npz": "f2936efa92ba6e9136a1cfe5ebd4aa3cd2620f0ab20e2cb893d870172f55780f",
-  "tasks/jetauto_pro/demo-S001_s0.json": "3353e82bdd572caa3ca62f22bbe178ee2afdcb8e6357f62741fc3fe375a847b9",
-  "tasks/jetauto_pro/demo-S040_s0.json": "278dbba67d86a4ea8546790c30a9ea28833397b4a8f6215635b1adb445c8ed29",
-  "tasks/jetauto_pro/demo-S082_s0.json": "8650cff65dae445550b4f3acbc04096332c52e80be73e25909d242383a9850d2",
-  "tasks/jetauto_pro/demo-S105_s0.json": "0b5438f25f85457cdea711cbb85817ec3e9df204291ad8e0bf65acbd4cae2223",
-  "tasks/jetauto_pro/demo-S130_s0.json": "fc13cbf2920c94d73eb92989177c2cbceba1386757aa38ab576716f6b68342d3",
-  "tasks/jetauto_pro/demo-S133_s0.json": "00bd66a733e3f8dece49da1df5ccad2d78351a8fa3a8d11c03e48d2400436644",
-  "robots/jetauto_pro.json": "67398138cd286e3bfe91f8dec6789abc90892e1fb3555c63e4804c4108397fc4"
+  "tasks/jetauto_pro/demo-S001_s0.json": "31e5a324240588d0c6c1428c8214a8a176779b64ac617b7a56dac2f2ce24e2bc",
+  "tasks/jetauto_pro/demo-S040_s0.json": "fd245d6f1d17a1ed16829689d0a67cf9c960bf395ebad3d85d1b6fc74e56ba8a",
+  "tasks/jetauto_pro/demo-S082_s0.json": "4a7ae419095a7a72a7ed9394e43e0eab06bc0ed01d43e0092a8f9ceef9dc0ce8",
+  "tasks/jetauto_pro/demo-S105_s0.json": "ee20dfffded764bef9ec54f3092b5fb16731b503b3983dbd29a4e1b39fd79f0e",
+  "tasks/jetauto_pro/demo-S130_s0.json": "c1d94928fa123fb649692f86ad7b1549e8096663e94026f87bf2910a45cb4b27",
+  "tasks/jetauto_pro/demo-S133_s0.json": "985991caa11351f2d9b18c74111f5e3ce10956bb02d9ba7b38ea8382991e00b5",
+  "robots/jetauto_pro.json": "1dbae824c72b06d3e179faf206bd175f691d9bde341a8a6c57495694aa4fb506"
  }
 }
