@@ -88,6 +88,7 @@ Optional extras (combine them, e.g. `hm3denv[fast,build]`):
 | Extra | Adds | Needed for |
 |---|---|---|
 | `fast` | numba | compiled collision / LiDAR kernels (steps ~3.5× faster on HM3D maps, up to ~45× on very dense maps) — recommended |
+| `hub` | huggingface_hub | downloading the pre-built datasets (`hm3d download`) |
 | `build` | trimesh, pillow, xacro, pycollada, shapely | building datasets (`hm3d build`, `hm3d review`, …) |
 | `test` | pytest | running the tests |
 
@@ -114,20 +115,54 @@ package**, so everything works right after installation:
 | `demo-grid` | `HM3D/Grid-v0` | `jetauto_pro` | 6 scenes (3 / 2 / 1) | 10 per map |
 
 They were built from Isaac-Scene-Builder scenes with the same pipeline as full datasets and are
-meant for trying the API, tests and debugging. For real experiments build larger datasets with
-`hm3d build`:
+meant for trying the API, tests and debugging.
+
+### Pre-built datasets (Hugging Face)
+
+Full datasets are hosted on Hugging Face:
+[**TranKimHieu/2D_Navigation_Sim**](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim).
+
+| Dataset | Environment | Source | Maps | Robots | Tasks |
+|---|---|---|---|---|---|
+| `isb-svg-v1` | `HM3D/Svg-v0` | Isaac-Scene-Builder | 204 | all 9 | 36 720 |
+| `isb-grid-v1` | `HM3D/Grid-v0` | Isaac-Scene-Builder | 202 | `jetauto_pro` | 4 040 |
+| `svg-v1` | `HM3D/Svg-v0` | HM3D | 177 | all 9 | 30 835 |
+| `grid-jetauto-v1` | `HM3D/Grid-v0` | HM3D | 157 | `jetauto_pro` | 3 140 |
+| `grid-s15-v1` | `HM3D/Grid-v0` (15 cm cells) | HM3D | 166 | `s15_h63` | 3 320 |
+
+Access is gated and reviewed by hand; the HM3D-derived datasets are only shared with people who
+have been granted access to HM3D by Matterport.
+
+1. Request access with the form on the
+   [dataset page](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim) and wait for
+   the approval.
+2. Log in once: `hf auth login` (a *read* token is enough).
+3. Download by name:
+
+```bash
+pip install ".[fast,hub]"
+hm3d download                    # list the datasets you can download
+hm3d download isb-svg-v1 svg-v1  # -> ~/.hm3denv/datasets/ (or $HM3D_HOME/datasets)
+```
+
+Downloaded datasets are validated against their manifest and then found by name:
+`gym.make("HM3D/Svg-v0", dataset="isb-svg-v1", robot="pal_tiago")`.
+
+### Building your own
 
 - **From HM3D** — real houses. HM3D is distributed by Matterport under its own terms of use
   (see the [official HM3D page](https://aihabitat.org/datasets/hm3d/)); request access and
   download it yourself, then [build the datasets](#from-hm3d).
 - **From Isaac-Scene-Builder** — scenes you designed yourself, see
   [below](#from-isaac-scene-builder). No license restriction.
-- **Pre-built datasets** — if someone shares a dataset directory with you, put it anywhere and
-  point `HM3D_DATASETS` to its parent directory.
+- **Shared dataset directories** — put them anywhere and point `HM3D_DATASETS` to their parent
+  directory.
 
-Datasets are found by name in the directories of `HM3D_DATASETS` (separated by `;` on
-Windows and `:` on Linux/macOS), then in `<workspace>/datasets/`, then among the bundled demos;
-you can also pass a path.
+### Where datasets are found
+
+By name, in this order: the directories of `HM3D_DATASETS` (separated by `;` on Windows and `:`
+on Linux/macOS), `<workspace>/datasets/`, the download directory (`$HM3D_HOME/datasets`, default
+`~/.hm3denv/datasets`), then the bundled demos. You can also pass a path.
 
 ```bash
 hm3d datasets                      # list the datasets found
@@ -506,7 +541,7 @@ src/hm3denv/
               Isaac-Scene-Builder import, pipeline
   cache.py    on-disk map cache       vector.py  vector environments
   bench.py    throughput              evaluate.py evaluation
-  cli.py      the `hm3d` command
+  cli.py      the `hm3d` command      download.py  `hm3d download` (Hugging Face)
   demo/       bundled demo datasets (demo-svg, demo-grid)
 tests/        pytest suite (synthetic data, no download needed)
 ```

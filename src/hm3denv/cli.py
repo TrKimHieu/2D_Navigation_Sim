@@ -4,6 +4,7 @@ Using datasets (no workspace needed):
     hm3d datasets                         list datasets found
     hm3d datasets validate NAME           check files against the manifest
     hm3d info NAME                        robots, splits, counts, flags
+    hm3d download [NAME ...] [--dir D]    pre-built datasets from Hugging Face (no name: list)
     hm3d robots                           list robot presets
     hm3d robots check [ID|FILE ...]       validate presets
     hm3d eval NAME [--robot R] [--agent oracle|random|mod:fn] [--split S]
@@ -69,6 +70,16 @@ def cmd_datasets(args):
         print("no datasets found; searched:", [str(d) for d in paths.dataset_dirs(args.search)])
         return 1
     _print_table(rows, ("name", "env", "robots", "tasks", "created", "path"))
+
+
+def cmd_download(args):
+    from . import download as D
+    if not args.names:
+        for n in D.available(args.token):
+            print(n)
+        return
+    for root in D.download(args.names, args.dir, args.token, args.force):
+        print(f"{root.name}: OK -> {root}")
 
 
 def cmd_info(args):
@@ -316,6 +327,13 @@ def parser():
     s.add_argument("name", nargs="?")
     s.set_defaults(fn=cmd_datasets)
 
+    s = sub.add_parser("download", help="download pre-built datasets from Hugging Face")
+    s.add_argument("names", nargs="*", help="dataset names (none: list the available ones)")
+    s.add_argument("--dir", help="target directory (default: $HM3D_HOME/datasets, searched by name)")
+    s.add_argument("--token", help="Hugging Face token (default: the one from `hf auth login`)")
+    s.add_argument("--force", action="store_true", help="download again even if present")
+    s.set_defaults(fn=cmd_download)
+
     s = sub.add_parser("info", help="describe a dataset")
     s.add_argument("name")
     s.add_argument("--flags", action="store_true", help="list flagged maps")
@@ -414,7 +432,8 @@ def main(argv=None):
                         format="%(message)s")
     try:
         return args.fn(args) or 0
-    except (paths.WorkspaceNotFound, FileNotFoundError, FileExistsError, KeyError, ValueError) as e:
+    except (paths.WorkspaceNotFound, FileNotFoundError, FileExistsError, KeyError, ValueError,
+            PermissionError, ImportError) as e:
         if args.verbose:
             raise
         print(f"error: {e}", file=sys.stderr)

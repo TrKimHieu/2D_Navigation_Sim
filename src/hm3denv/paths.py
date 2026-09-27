@@ -6,6 +6,7 @@ demo datasets shipped inside the package (``demo-svg``, ``demo-grid``).
 
     HM3D_WORKSPACE   workspace root (contains workspace.yaml)
     HM3D_DATASETS    extra dataset directories, separated by os.pathsep
+    HM3D_HOME        per-user data (default ~/.hm3denv): datasets/ holds `hm3d download` output
 
 Workspace layout::
 
@@ -63,6 +64,12 @@ def user_robots_dir(ws: Path | None) -> Path | None:
     return ws / "robots" if ws else None
 
 
+def download_dir() -> Path:
+    """Where `hm3d download` puts datasets: $HM3D_HOME/datasets (default ~/.hm3denv/datasets)."""
+    home = os.environ.get("HM3D_HOME") or Path.home() / ".hm3denv"
+    return Path(home).expanduser() / "datasets"
+
+
 def dataset_dirs(extra: str | os.PathLike | None = None) -> list[Path]:
     """Directories searched for datasets, in priority order."""
     dirs: list[Path] = []
@@ -74,6 +81,7 @@ def dataset_dirs(extra: str | os.PathLike | None = None) -> list[Path]:
     ws = find_workspace(required=False)
     if ws:
         dirs.append(ws / "datasets")
+    dirs.append(download_dir())
     dirs.append(DEMO_DATASETS)
     return [d.resolve() for d in dirs]
 

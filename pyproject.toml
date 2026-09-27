@@ -35,6 +35,7 @@ dependencies = [
 [project.optional-dependencies]
 fast = ["numba>=0.59"]                                    # compiled collision / LiDAR kernels
 build = ["trimesh>=4", "pillow>=10", "xacro>=2", "pycollada>=0.8", "shapely>=2"]
+hub = ["huggingface_hub>=0.23"]                         # hm3d download (pre-built datasets)
 test = ["pytest>=7"]
 
 [project.urls]
