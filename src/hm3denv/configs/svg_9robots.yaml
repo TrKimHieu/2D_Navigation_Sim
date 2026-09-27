@@ -1,0 +1,16 @@
+# Continuous (SVG) dataset for every packaged robot preset.
+name: svg-v1
+env: svg
+split: {train: 0.7, val: 0.15, test: 0.15, seed: 0}
+robots: all
+map:
+  epsilon_px: 0.5         # polygon simplification (px of 2 cm)
+  min_iou: 0.98
+tasks:
+  k: 20
+  min_geo: 1.0
+  max_geo: 30.0
+  min_gdr: 1.1
+  clearance: 0.05
+  success_radius: 0.2
+  seed: 0

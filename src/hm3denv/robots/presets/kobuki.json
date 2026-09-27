@@ -1,0 +1,256 @@
+{
+ "schema_version": "1.0",
+ "id": "kobuki",
+ "name": "Yujin Kobuki (TurtleBot 2 / LoCoBot base)",
+ "footprint": {
+  "type": "polygon",
+  "points": [
+   [
+    -0.0149,
+    -0.175
+   ],
+   [
+    -0.0009,
+    -0.175
+   ],
+   [
+    0.0021,
+    -0.173
+   ],
+   [
+    0.0051,
+    -0.175
+   ],
+   [
+    0.0231,
+    -0.173
+   ],
+   [
+    0.0351,
+    -0.174
+   ],
+   [
+    0.0541,
+    -0.169
+   ],
+   [
+    0.0811,
+    -0.158
+   ],
+   [
+    0.1091,
+    -0.139
+   ],
+   [
+    0.1311,
+    -0.12
+   ],
+   [
+    0.1541,
+    -0.088
+   ],
+   [
+    0.1611,
+    -0.074
+   ],
+   [
+    0.1701,
+    -0.05
+   ],
+   [
+    0.1751,
+    -0.03
+   ],
+   [
+    0.1771,
+    -0.011
+   ],
+   [
+    0.1761,
+    0.023
+   ],
+   [
+    0.1681,
+    0.056
+   ],
+   [
+    0.1541,
+    0.088
+   ],
+   [
+    0.1311,
+    0.12
+   ],
+   [
+    0.1181,
+    0.132
+   ],
+   [
+    0.0971,
+    0.148
+   ],
+   [
+    0.0811,
+    0.158
+   ],
+   [
+    0.0481,
+    0.171
+   ],
+   [
+    0.0351,
+    0.174
+   ],
+   [
+    0.0231,
+    0.173
+   ],
+   [
+    0.0051,
+    0.175
+   ],
+   [
+    0.0021,
+    0.173
+   ],
+   [
+    -0.0009,
+    0.175
+   ],
+   [
+    -0.0149,
+    0.175
+   ],
+   [
+    -0.0479,
+    0.169
+   ],
+   [
+    -0.0699,
+    0.161
+   ],
+   [
+    -0.0839,
+    0.154
+   ],
+   [
+    -0.1069,
+    0.139
+   ],
+   [
+    -0.1349,
+    0.112
+   ],
+   [
+    -0.1519,
+    0.088
+   ],
+   [
+    -0.1589,
+    0.074
+   ],
+   [
+    -0.1679,
+    0.05
+   ],
+   [
+    -0.1729,
+    0.03
+   ],
+   [
+    -0.1749,
+    0.011
+   ],
+   [
+    -0.1739,
+    -0.023
+   ],
+   [
+    -0.1659,
+    -0.056
+   ],
+   [
+    -0.1519,
+    -0.088
+   ],
+   [
+    -0.1349,
+    -0.112
+   ],
+   [
+    -0.1069,
+    -0.139
+   ],
+   [
+    -0.0839,
+    -0.154
+   ],
+   [
+    -0.0699,
+    -0.161
+   ],
+   [
+    -0.0439,
+    -0.17
+   ]
+  ]
+ },
+ "height": 0.1248,
+ "height_class": "h36",
+ "drive": "differential",
+ "limits": {
+  "v_max": 0.7,
+  "v_min": -0.7,
+  "vy_max": 0.0,
+  "w_max": 3.1416
+ },
+ "lidar": {
+  "model": "generic RPLIDAR A1M8",
+  "range_min": 0.15,
+  "range_max": 12.0,
+  "fov": 6.2832,
+  "beams": 360
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://github.com/kobuki-base/kobuki_ros/blob/devel/kobuki_description/urdf/kobuki_standalone.urdf.xacro",
+   "method": "every visual geometry of the URDF (joints = 0) projected onto the floor of frame 'base_footprint' at 1 mm, outer outline, simplified to 1 mm (hm3d robots import-urdf)"
+  },
+  "height": {
+   "kind": "official",
+   "url": "http://kobuki.yujinrobot.com/about2/"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://iclebo-kobuki.readthedocs.io/en/latest/specifications.html"
+  },
+  "limits.v_min": {
+   "kind": "estimated",
+   "method": "The manufacturer only publishes the maximum speed; the maximum reverse speed is assumed equal to it."
+  },
+  "limits.vy_max": {
+   "kind": "official",
+   "url": "https://iclebo-kobuki.readthedocs.io/en/latest/specifications.html",
+   "note": "differential drive"
+  },
+  "limits.w_max": {
+   "kind": "official",
+   "url": "https://iclebo-kobuki.readthedocs.io/en/latest/specifications.html",
+   "note": "180 deg/s; the gyro loses accuracy above 110 deg/s"
+  },
+  "lidar": {
+   "kind": "estimated",
+   "method": "The robot ships without a LiDAR; the common 2D LiDAR RPLIDAR A1M8 is assumed (0.15-12 m, 360 degrees per the SLAMTEC datasheet)."
+  },
+  "footprint_simple": {
+   "kind": "official",
+   "url": "http://kobuki.yujinrobot.com/about2/",
+   "note": "diameter 351.5 mm"
+  }
+ },
+ "footprint_simple": {
+  "type": "circle",
+  "radius": 0.17575
+ }
+}

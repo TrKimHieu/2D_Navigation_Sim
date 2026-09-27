@@ -1,0 +1,428 @@
+{
+ "schema_version": "1.0",
+ "id": "agilex_limo",
+ "name": "AgileX LIMO (4-wheel differential mode)",
+ "footprint": {
+  "type": "polygon",
+  "points": [
+   [
+    -0.1501,
+    -0.0847
+   ],
+   [
+    -0.1471,
+    -0.0867
+   ],
+   [
+    -0.1481,
+    -0.0997
+   ],
+   [
+    -0.1461,
+    -0.1057
+   ],
+   [
+    -0.1421,
+    -0.1077
+   ],
+   [
+    -0.0671,
+    -0.1087
+   ],
+   [
+    -0.0581,
+    -0.1077
+   ],
+   [
+    -0.0541,
+    -0.1057
+   ],
+   [
+    -0.0521,
+    -0.0997
+   ],
+   [
+    -0.0531,
+    -0.0817
+   ],
+   [
+    -0.0521,
+    -0.0787
+   ],
+   [
+    -0.0491,
+    -0.0767
+   ],
+   [
+    -0.0461,
+    -0.0787
+   ],
+   [
+    -0.0411,
+    -0.0947
+   ],
+   [
+    0.0279,
+    -0.0947
+   ],
+   [
+    0.0359,
+    -0.0677
+   ],
+   [
+    0.0389,
+    -0.0657
+   ],
+   [
+    0.0399,
+    -0.0597
+   ],
+   [
+    0.0849,
+    -0.0587
+   ],
+   [
+    0.0879,
+    -0.0607
+   ],
+   [
+    0.0879,
+    -0.0627
+   ],
+   [
+    0.0849,
+    -0.0647
+   ],
+   [
+    0.0609,
+    -0.0647
+   ],
+   [
+    0.0539,
+    -0.0677
+   ],
+   [
+    0.0519,
+    -0.0737
+   ],
+   [
+    0.0519,
+    -0.0997
+   ],
+   [
+    0.0549,
+    -0.1067
+   ],
+   [
+    0.0679,
+    -0.1087
+   ],
+   [
+    0.1329,
+    -0.1087
+   ],
+   [
+    0.1449,
+    -0.1067
+   ],
+   [
+    0.1479,
+    -0.0997
+   ],
+   [
+    0.1479,
+    -0.0737
+   ],
+   [
+    0.1459,
+    -0.0667
+   ],
+   [
+    0.1399,
+    -0.0647
+   ],
+   [
+    0.1149,
+    -0.0647
+   ],
+   [
+    0.1119,
+    -0.0627
+   ],
+   [
+    0.1119,
+    -0.0577
+   ],
+   [
+    0.1229,
+    -0.0517
+   ],
+   [
+    0.1259,
+    -0.0537
+   ],
+   [
+    0.1469,
+    -0.0437
+   ],
+   [
+    0.1589,
+    -0.0347
+   ],
+   [
+    0.1589,
+    0.0343
+   ],
+   [
+    0.1469,
+    0.0433
+   ],
+   [
+    0.1269,
+    0.0533
+   ],
+   [
+    0.1219,
+    0.0523
+   ],
+   [
+    0.1119,
+    0.0583
+   ],
+   [
+    0.1119,
+    0.0633
+   ],
+   [
+    0.1149,
+    0.0653
+   ],
+   [
+    0.1419,
+    0.0653
+   ],
+   [
+    0.1459,
+    0.0673
+   ],
+   [
+    0.1479,
+    0.0733
+   ],
+   [
+    0.1479,
+    0.0993
+   ],
+   [
+    0.1459,
+    0.1063
+   ],
+   [
+    0.1399,
+    0.1083
+   ],
+   [
+    0.0609,
+    0.1083
+   ],
+   [
+    0.0549,
+    0.1063
+   ],
+   [
+    0.0519,
+    0.0993
+   ],
+   [
+    0.0519,
+    0.0733
+   ],
+   [
+    0.0539,
+    0.0673
+   ],
+   [
+    0.0579,
+    0.0653
+   ],
+   [
+    0.0859,
+    0.0653
+   ],
+   [
+    0.0889,
+    0.0633
+   ],
+   [
+    0.0889,
+    0.0593
+   ],
+   [
+    0.0859,
+    0.0573
+   ],
+   [
+    0.0399,
+    0.0593
+   ],
+   [
+    0.0389,
+    0.0663
+   ],
+   [
+    0.0359,
+    0.0683
+   ],
+   [
+    0.0339,
+    0.0773
+   ],
+   [
+    0.0279,
+    0.0913
+   ],
+   [
+    0.0279,
+    0.0953
+   ],
+   [
+    -0.0411,
+    0.0953
+   ],
+   [
+    -0.0411,
+    0.0913
+   ],
+   [
+    -0.0461,
+    0.0783
+   ],
+   [
+    -0.0491,
+    0.0763
+   ],
+   [
+    -0.0521,
+    0.0783
+   ],
+   [
+    -0.0531,
+    0.0823
+   ],
+   [
+    -0.0531,
+    0.1043
+   ],
+   [
+    -0.0541,
+    0.1063
+   ],
+   [
+    -0.0601,
+    0.1083
+   ],
+   [
+    -0.1391,
+    0.1083
+   ],
+   [
+    -0.1451,
+    0.1063
+   ],
+   [
+    -0.1481,
+    0.0993
+   ],
+   [
+    -0.1471,
+    0.0873
+   ],
+   [
+    -0.1511,
+    0.0843
+   ],
+   [
+    -0.1611,
+    0.0843
+   ],
+   [
+    -0.1631,
+    0.0803
+   ],
+   [
+    -0.1631,
+    -0.0807
+   ],
+   [
+    -0.1611,
+    -0.0847
+   ]
+  ]
+ },
+ "height": 0.251,
+ "height_class": "h36",
+ "drive": "differential",
+ "limits": {
+  "v_max": 1.0,
+  "v_min": -1.0,
+  "vy_max": 0.0,
+  "w_max": 1.0
+ },
+ "lidar": {
+  "model": "EAI YDLIDAR X2L",
+  "range_min": 0.12,
+  "range_max": 8.0,
+  "fov": 6.2832,
+  "beams": 360
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://github.com/agilexrobotics/limo_ros/blob/master/limo_description/urdf/limo_four_diff.xacro",
+   "method": "every visual geometry of the URDF (joints = 0) projected onto the floor of frame 'base_footprint' at 1 mm, outer outline, simplified to 1 mm (hm3d robots import-urdf)"
+  },
+  "height": {
+   "kind": "official",
+   "url": "https://github.com/agilexrobotics/limo-doc/blob/master/Limo%20user%20manual(EN).md"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://github.com/agilexrobotics/limo-doc/blob/master/Limo%20user%20manual(EN).md",
+   "note": "no-load max speed"
+  },
+  "limits.v_min": {
+   "kind": "estimated",
+   "method": "The manufacturer only publishes the maximum speed; the maximum reverse speed is assumed equal to it."
+  },
+  "limits.vy_max": {
+   "kind": "official",
+   "url": "https://github.com/agilexrobotics/limo-doc/blob/master/Limo%20user%20manual(EN).md",
+   "note": "differential mode; Ackermann / mecanum modes are not modelled"
+  },
+  "limits.w_max": {
+   "kind": "estimated",
+   "method": "The manufacturer does not publish the maximum angular velocity; a conservative 1.0 rad/s is used, in line with TurtleBot3 Waffle Pi (1.82) and TurtleBot 4 (1.90). The kinematic bound 2*v_max/track width is not used because it far exceeds the practical safe limit."
+  },
+  "lidar": {
+   "kind": "official",
+   "url": "https://docs.trossenrobotics.com/agilex_limo_docs/specifications/limo.html"
+  },
+  "lidar.fov": {
+   "kind": "estimated",
+   "method": "The X2L scans 360 degrees."
+  },
+  "lidar.beams": {
+   "kind": "estimated",
+   "method": "1 beam per degree, close to the ~1 degree angular resolution of low-cost 2D LiDARs; the environment resamples to n_beams beams."
+  },
+  "footprint_simple": {
+   "kind": "official",
+   "url": "https://github.com/agilexrobotics/limo-doc/blob/master/Limo%20user%20manual(EN).md"
+  }
+ },
+ "footprint_simple": {
+  "type": "rectangle",
+  "length": 0.322,
+  "width": 0.22
+ }
+}

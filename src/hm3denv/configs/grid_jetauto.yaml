@@ -1,0 +1,18 @@
+# Grid dataset for the Hiwonder JetAuto Pro (one cell = 0.34 m, the robot's longest side).
+name: grid-jetauto-v1
+env: grid
+scenes: all
+exclude: []
+split: {train: 0.7, val: 0.15, test: 0.15, seed: 0}
+grid:
+  robot: jetauto_pro
+  robot_size: null        # null = use the preset footprint
+  margin: 0.04            # safety margin around obstacles (m)
+  floor_cover: 0.9
+  roof: true              # indoor only
+tasks:
+  k: 20                   # tasks per map
+  d_min: 8
+  budget: 200
+  slack: 20
+  seed: 0

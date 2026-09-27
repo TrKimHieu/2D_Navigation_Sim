@@ -1,0 +1,63 @@
+{
+ "scene": "demo-S001",
+ "storey": 0,
+ "floor_z": 0.0,
+ "ceil_z": null,
+ "floor_margin": 0.05,
+ "up": 2,
+ "ua": 0,
+ "va": 1,
+ "res": 0.025,
+ "H": 736,
+ "W": 736,
+ "lo": [
+  -0.2,
+  -0.20000000000000284,
+  0.0
+ ],
+ "source": {
+  "type": "isaac_scene_builder",
+  "scene_id": "S001",
+  "bev": "Isaac-Scene-Builder/output/bev/S001/S001.pgm",
+  "source": "procedural",
+  "level": "d10",
+  "occlusion_density_target": 0.1,
+  "occlusion_density_actual": 0.07204829625739609,
+  "n_furniture_placed": 33,
+  "traversable": true,
+  "n_zones_actual": 1,
+  "n_doors": 0,
+  "grid": [
+   6,
+   6
+  ],
+  "legacy_id": null,
+  "usd": "Isaac-Scene-Builder/output/scenes/S001.usd"
+ },
+ "frame_note": "x, y = Isaac Sim USD world frame of the scene (Z up; Isaac-Scene-Builder editor coordinates); theta CCW from +x. The BEV .yaml uses the ROS map frame (y flipped).",
+ "k": 13,
+ "oy": 3,
+ "ox": 6,
+ "r0": 1,
+ "c0": 1,
+ "free_cells": 2147,
+ "main_cells": 2147,
+ "main_frac": 1.0,
+ "map_id": "demo-S001_s0",
+ "robot": "jetauto_pro",
+ "cell_m": 0.325,
+ "margin": 0.04,
+ "floor_close": 0.1,
+ "max_hole_m2": 1.0,
+ "floor_cover": 0.9,
+ "obstacle_png": "storey0_h63.png",
+ "roof_check": true,
+ "roof_cover": 0.9,
+ "noroof_cells": 0,
+ "shape": [
+  56,
+  56
+ ],
+ "main_m2": 226.78,
+ "flags": []
+}

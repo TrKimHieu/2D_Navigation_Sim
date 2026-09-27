@@ -1,0 +1,58 @@
+{
+ "schema_version": "1.0",
+ "id": "jetauto_pro",
+ "name": "Hiwonder JetAuto Pro (mecanum)",
+ "footprint": {
+  "type": "rectangle",
+  "length": 0.324,
+  "width": 0.26
+ },
+ "height": 0.626,
+ "height_class": "h63",
+ "drive": "omnidirectional",
+ "limits": {
+  "v_max": 0.6,
+  "v_min": -0.6,
+  "vy_max": 0.6,
+  "w_max": 1.0
+ },
+ "lidar": {
+  "model": "SLAMTEC RPLIDAR A1M8",
+  "range_min": 0.15,
+  "range_max": 12.0,
+  "fov": 6.2832,
+  "beams": 360
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://www.hiwonder.com/products/jetauto-pro"
+  },
+  "height": {
+   "kind": "official",
+   "url": "https://www.hiwonder.com/products/jetauto-pro",
+   "note": "62.6 cm, arm assumed folded"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://docs.hiwonder.com/projects/JetAuto/en/jetauto-orin-nano/docs/2.motion_control.html",
+   "note": "the manufacturer recommends staying within -0.6..0.6 m/s; this is not the top speed"
+  },
+  "limits.v_min": {
+   "kind": "official",
+   "url": "https://docs.hiwonder.com/projects/JetAuto/en/jetauto-orin-nano/docs/2.motion_control.html"
+  },
+  "limits.vy_max": {
+   "kind": "estimated",
+   "method": "Mecanum; taken equal to v_max."
+  },
+  "limits.w_max": {
+   "kind": "estimated",
+   "method": "The manufacturer does not publish the maximum angular velocity; a conservative 1.0 rad/s is used, in line with TurtleBot3 Waffle Pi (1.82) and TurtleBot 4 (1.90). The kinematic bound 2*v_max/track width is not used because it far exceeds the practical safe limit."
+  },
+  "lidar": {
+   "kind": "estimated",
+   "method": "JetAuto comes with a SLAMTEC A1 or an EAI G4 option; the A1M8 is used (0.15-12 m per the SLAMTEC datasheet)."
+  }
+ }
+}

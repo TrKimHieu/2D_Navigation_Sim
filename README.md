@@ -9,7 +9,7 @@
 ![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-3776AB?logo=python&logoColor=white)
 ![Gymnasium](https://img.shields.io/badge/API-Gymnasium%201.x-0081A5)
 ![License](https://img.shields.io/badge/license-MIT-green)
-[![CI](https://github.com/OWNER/hm3denv/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/hm3denv/actions/workflows/ci.yml)
+[![CI](https://github.com/TrKimHieu/2D_Navigation_Sim/actions/workflows/ci.yml/badge.svg)](https://github.com/TrKimHieu/2D_Navigation_Sim/actions/workflows/ci.yml)
 
 </div>
 
@@ -71,7 +71,7 @@ reaches 100 % of the tasks, so every task is solvable.
 Python 3.10–3.12. The environments run on the CPU; a GPU is only useful for your policy.
 
 ```bash
-git clone https://github.com/OWNER/hm3denv && cd hm3denv
+git clone https://github.com/TrKimHieu/2D_Navigation_Sim && cd 2D_Navigation_Sim
 pip install ".[fast]"
 hm3d eval demo-svg --robot turtlebot4 --agent oracle     # works right away: 100 % success
 ```
@@ -80,7 +80,7 @@ That is all: two small demo datasets ship with the package, so the environments 
 downloading anything (see [Getting data](#getting-data)). Without cloning:
 
 ```bash
-pip install "hm3denv[fast] @ git+https://github.com/OWNER/hm3denv"
+pip install "hm3denv[fast] @ git+https://github.com/TrKimHieu/2D_Navigation_Sim"
 ```
 
 Optional extras (combine them, e.g. `hm3denv[fast,build]`):
@@ -94,7 +94,7 @@ Optional extras (combine them, e.g. `hm3denv[fast,build]`):
 From a clone (for development):
 
 ```bash
-git clone https://github.com/OWNER/hm3denv && cd hm3denv
+git clone https://github.com/TrKimHieu/2D_Navigation_Sim && cd 2D_Navigation_Sim
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -e ".[fast,build,test]"
 pytest -m "not workspace"
@@ -529,7 +529,7 @@ If you use hm3denv in your research, please cite it (see [`CITATION.cff`](CITATI
   author  = {Tran, Kim Hieu},
   title   = {hm3denv: physically valid indoor robot-navigation environments from HM3D},
   year    = {2026},
-  url     = {https://github.com/OWNER/hm3denv},
+  url     = {https://github.com/TrKimHieu/2D_Navigation_Sim},
   version = {0.8.0}
 }
 ```

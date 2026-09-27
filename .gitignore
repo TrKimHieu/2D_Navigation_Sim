@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------- data (never committed)
+# Workspace: HM3D GLB files, caches, intermediate stages and built datasets.
+# HM3D is under the Matterport license: publish datasets built from it separately.
+workspace/
+/datasets/
+*.glb
+*.usd
+*.usda
+*.usdc
+
+# Private archive of earlier tools and internal notes (kept locally only)
+_legacy/
+
+# ---------------------------------------------------------------- Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.egg-info/
+.eggs/
+/build/
+/dist/
+/wheels/
+/pip-wheel-metadata/
+*.egg
+MANIFEST
+
+# numba on-disk kernel cache
+*.nbi
+*.nbc
+
+# virtual environments
+.venv/
+/venv/
+/env/
+/ENV/
+.conda/
+
+# tests, coverage, type checkers, linters
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.hypothesis/
+
+# notebooks
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------- run outputs
+# benchmark / evaluation dumps (hm3d bench --json, hm3d eval --out)
+bench*.json
+episodes*.jsonl
+
+# ---------------------------------------------------------------- editors / OS / tools
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+.claude/
+*.tmp
+*.log

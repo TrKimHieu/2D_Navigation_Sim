@@ -1,0 +1,191 @@
+{
+ "schema_version": "1.0",
+ "id": "clearpath_jackal",
+ "name": "Clearpath Jackal UGV",
+ "footprint": {
+  "type": "polygon",
+  "points": [
+   [
+    -0.2133,
+    -0.215
+   ],
+   [
+    0.2127,
+    -0.215
+   ],
+   [
+    0.2267,
+    -0.203
+   ],
+   [
+    0.2297,
+    -0.195
+   ],
+   [
+    0.2327,
+    -0.192
+   ],
+   [
+    0.2357,
+    -0.165
+   ],
+   [
+    0.2407,
+    -0.158
+   ],
+   [
+    0.2437,
+    -0.101
+   ],
+   [
+    0.2557,
+    -0.013
+   ],
+   [
+    0.2557,
+    0.013
+   ],
+   [
+    0.2437,
+    0.102
+   ],
+   [
+    0.2407,
+    0.158
+   ],
+   [
+    0.2357,
+    0.165
+   ],
+   [
+    0.2337,
+    0.188
+   ],
+   [
+    0.2267,
+    0.203
+   ],
+   [
+    0.2127,
+    0.215
+   ],
+   [
+    -0.2133,
+    0.215
+   ],
+   [
+    -0.2173,
+    0.21
+   ],
+   [
+    -0.2203,
+    0.209
+   ],
+   [
+    -0.2263,
+    0.203
+   ],
+   [
+    -0.2323,
+    0.192
+   ],
+   [
+    -0.2363,
+    0.162
+   ],
+   [
+    -0.2403,
+    0.159
+   ],
+   [
+    -0.2443,
+    0.094
+   ],
+   [
+    -0.2553,
+    0.013
+   ],
+   [
+    -0.2553,
+    -0.013
+   ],
+   [
+    -0.2443,
+    -0.094
+   ],
+   [
+    -0.2403,
+    -0.159
+   ],
+   [
+    -0.2363,
+    -0.162
+   ],
+   [
+    -0.2333,
+    -0.188
+   ],
+   [
+    -0.2263,
+    -0.203
+   ]
+  ]
+ },
+ "height": 0.25,
+ "height_class": "h36",
+ "drive": "differential",
+ "limits": {
+  "v_max": 2.0,
+  "v_min": -2.0,
+  "vy_max": 0.0,
+  "w_max": 1.0
+ },
+ "lidar": {
+  "model": "generic RPLIDAR A1M8",
+  "range_min": 0.15,
+  "range_max": 12.0,
+  "fov": 6.2832,
+  "beams": 360
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://github.com/jackal/jackal/blob/noetic-devel/jackal_description/urdf/jackal.urdf.xacro",
+   "method": "every visual geometry of the URDF (joints = 0) projected onto the floor of frame 'base_link' at 1 mm, outer outline, simplified to 1 mm (hm3d robots import-urdf)"
+  },
+  "height": {
+   "kind": "official",
+   "url": "https://www.clearpathrobotics.com/wp-content/uploads/2015/06/Jackal_Brochure_2014-web.pdf"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://www.clearpathrobotics.com/wp-content/uploads/2015/06/Jackal_Brochure_2014-web.pdf"
+  },
+  "limits.v_min": {
+   "kind": "estimated",
+   "method": "The manufacturer only publishes the maximum speed; the maximum reverse speed is assumed equal to it."
+  },
+  "limits.vy_max": {
+   "kind": "official",
+   "url": "https://www.clearpathrobotics.com/wp-content/uploads/2015/06/Jackal_Brochure_2014-web.pdf",
+   "note": "skid-steer, modelled as differential drive"
+  },
+  "limits.w_max": {
+   "kind": "estimated",
+   "method": "The manufacturer does not publish the maximum angular velocity; a conservative 1.0 rad/s is used, in line with TurtleBot3 Waffle Pi (1.82) and TurtleBot 4 (1.90). The kinematic bound 2*v_max/track width is not used because it far exceeds the practical safe limit."
+  },
+  "lidar": {
+   "kind": "estimated",
+   "method": "The robot ships without a LiDAR; the common 2D LiDAR RPLIDAR A1M8 is assumed (0.15-12 m, 360 degrees per the SLAMTEC datasheet)."
+  },
+  "footprint_simple": {
+   "kind": "official",
+   "url": "https://www.clearpathrobotics.com/wp-content/uploads/2015/06/Jackal_Brochure_2014-web.pdf"
+  }
+ },
+ "footprint_simple": {
+  "type": "rectangle",
+  "length": 0.508,
+  "width": 0.43
+ }
+}

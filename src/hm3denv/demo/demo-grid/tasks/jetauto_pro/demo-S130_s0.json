@@ -1,0 +1,302 @@
+{
+ "schema_version": "2.0",
+ "dataset": "demo-grid",
+ "env": "grid",
+ "map_id": "demo-S130_s0",
+ "robot": "jetauto_pro",
+ "split": "val",
+ "budget": 200,
+ "cell_m": 0.325,
+ "tasks": [
+  {
+   "id": 0,
+   "start": {
+    "x": 9.4625,
+    "y": 3.7125,
+    "cell": [
+     67,
+     29
+    ]
+   },
+   "goal": {
+    "x": 13.6875,
+    "y": 8.9125,
+    "cell": [
+     51,
+     42
+    ]
+   },
+   "geodesic_m": 9.425,
+   "euclidean_m": 6.7,
+   "labels": {
+    "d_bfs": 29,
+    "p0": 0.0030592865504387675,
+    "sa_uniform": 0.0030592865504387675,
+    "sa_persist": 0.02569736384416702,
+    "starved": false,
+    "level": "medium"
+   }
+  },
+  {
+   "id": 1,
+   "start": {
+    "x": 12.3875,
+    "y": 1.4375,
+    "cell": [
+     74,
+     38
+    ]
+   },
+   "goal": {
+    "x": 26.3625,
+    "y": 3.3875,
+    "cell": [
+     68,
+     81
+    ]
+   },
+   "geodesic_m": 18.525,
+   "euclidean_m": 14.1104,
+   "labels": {
+    "d_bfs": 57,
+    "p0": 3.3387825779676e-10,
+    "sa_uniform": 3.3387825779676e-10,
+    "sa_persist": 1.1406194100725917e-05,
+    "starved": true,
+    "level": "starved"
+   }
+  },
+  {
+   "id": 2,
+   "start": {
+    "x": 12.7125,
+    "y": 17.6875,
+    "cell": [
+     24,
+     39
+    ]
+   },
+   "goal": {
+    "x": 6.5375,
+    "y": 11.8375,
+    "cell": [
+     42,
+     20
+    ]
+   },
+   "geodesic_m": 15.925,
+   "euclidean_m": 8.5061,
+   "labels": {
+    "d_bfs": 49,
+    "p0": 1.734900922694344e-07,
+    "sa_uniform": 1.734900922694344e-07,
+    "sa_persist": 0.00029081661912048936,
+    "starved": true,
+    "level": "starved"
+   }
+  },
+  {
+   "id": 3,
+   "start": {
+    "x": 12.3875,
+    "y": 5.3375,
+    "cell": [
+     62,
+     38
+    ]
+   },
+   "goal": {
+    "x": 4.9125,
+    "y": 18.3375,
+    "cell": [
+     22,
+     15
+    ]
+   },
+   "geodesic_m": 26.975,
+   "euclidean_m": 14.9959,
+   "labels": {
+    "d_bfs": 83,
+    "p0": 4.9692025430136003e-17,
+    "sa_uniform": 4.9692025430136003e-17,
+    "sa_persist": 1.8830046598351705e-09,
+    "starved": true,
+    "level": "starved"
+   }
+  },
+  {
+   "id": 4,
+   "start": {
+    "x": 12.0625,
+    "y": 14.1125,
+    "cell": [
+     35,
+     37
+    ]
+   },
+   "goal": {
+    "x": 14.9875,
+    "y": 17.6875,
+    "cell": [
+     24,
+     46
+    ]
+   },
+   "geodesic_m": 9.75,
+   "euclidean_m": 4.6191,
+   "labels": {
+    "d_bfs": 30,
+    "p0": 0.0008369356336423772,
+    "sa_uniform": 0.0008369356336423772,
+    "sa_persist": 0.01624267504832815,
+    "starved": false,
+    "level": "hard"
+   }
+  },
+  {
+   "id": 5,
+   "start": {
+    "x": 20.8375,
+    "y": 4.0375,
+    "cell": [
+     66,
+     64
+    ]
+   },
+   "goal": {
+    "x": 16.2875,
+    "y": 13.7875,
+    "cell": [
+     36,
+     50
+    ]
+   },
+   "geodesic_m": 20.8,
+   "euclidean_m": 10.7594,
+   "labels": {
+    "d_bfs": 64,
+    "p0": 2.530970219167337e-09,
+    "sa_uniform": 2.530970219167337e-09,
+    "sa_persist": 1.3811343220471096e-05,
+    "starved": true,
+    "level": "starved"
+   }
+  },
+  {
+   "id": 6,
+   "start": {
+    "x": 4.5875,
+    "y": 25.1625,
+    "cell": [
+     1,
+     14
+    ]
+   },
+   "goal": {
+    "x": 11.7375,
+    "y": 5.9875,
+    "cell": [
+     60,
+     36
+    ]
+   },
+   "geodesic_m": 32.825,
+   "euclidean_m": 20.4647,
+   "labels": {
+    "d_bfs": 101,
+    "p0": 2.4120067743425638e-24,
+    "sa_uniform": 2.4120067743425638e-24,
+    "sa_persist": 2.157208486524574e-13,
+    "starved": true,
+    "level": "starved"
+   }
+  },
+  {
+   "id": 7,
+   "start": {
+    "x": 10.4375,
+    "y": 20.6125,
+    "cell": [
+     15,
+     32
+    ]
+   },
+   "goal": {
+    "x": 11.7375,
+    "y": 1.7625,
+    "cell": [
+     73,
+     36
+    ]
+   },
+   "geodesic_m": 26.0,
+   "euclidean_m": 18.8948,
+   "labels": {
+    "d_bfs": 80,
+    "p0": 2.2643048064106266e-16,
+    "sa_uniform": 2.2643048064106266e-16,
+    "sa_persist": 2.008404469017595e-09,
+    "starved": true,
+    "level": "starved"
+   }
+  },
+  {
+   "id": 8,
+   "start": {
+    "x": 10.7625,
+    "y": 18.3375,
+    "cell": [
+     22,
+     33
+    ]
+   },
+   "goal": {
+    "x": 13.0375,
+    "y": 19.3125,
+    "cell": [
+     19,
+     40
+    ]
+   },
+   "geodesic_m": 3.25,
+   "euclidean_m": 2.4751,
+   "labels": {
+    "d_bfs": 10,
+    "p0": 0.16450792272744585,
+    "sa_uniform": 0.16450792272744585,
+    "sa_persist": 0.21107702228245803,
+    "starved": false,
+    "level": "easy"
+   }
+  },
+  {
+   "id": 9,
+   "start": {
+    "x": 13.3625,
+    "y": 15.4125,
+    "cell": [
+     31,
+     41
+    ]
+   },
+   "goal": {
+    "x": 15.3125,
+    "y": 9.8875,
+    "cell": [
+     48,
+     47
+    ]
+   },
+   "geodesic_m": 9.425,
+   "euclidean_m": 5.859,
+   "labels": {
+    "d_bfs": 29,
+    "p0": 0.0005893348494896508,
+    "sa_uniform": 0.0005893348494896508,
+    "sa_persist": 0.002267878599151992,
+    "starved": false,
+    "level": "hard"
+   }
+  }
+ ]
+}

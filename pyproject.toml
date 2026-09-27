@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hm3denv"
+version = "0.8.0"
+description = "Physically valid indoor robot-navigation simulation (grid and continuous environments) built from HM3D and Isaac-Scene-Builder scenes"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Tran Kim Hieu"}]   # family name: Tran; given names: Kim Hieu
+keywords = ["robot-navigation", "simulation", "gymnasium", "HM3D", "lidar", "isaac-sim",
+            "reinforcement-learning"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Robotics",
+]
+dependencies = [
+    "gymnasium>=1.0",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "opencv-python-headless>=4.5",   # no GUI use; works on servers without libGL
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+fast = ["numba>=0.59"]                                    # compiled collision / LiDAR kernels
+build = ["trimesh>=4", "pillow>=10", "xacro>=2", "pycollada>=0.8", "shapely>=2"]
+test = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/TrKimHieu/2D_Navigation_Sim"
+Issues = "https://github.com/TrKimHieu/2D_Navigation_Sim/issues"
+
+[project.scripts]
+hm3d = "hm3denv.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"hm3denv.robots" = ["presets/*.json"]
+"hm3denv.build.review" = ["*.html"]
+"hm3denv" = ["configs/*.yaml", "demo/**/*"]   # demo datasets (~400 kB)
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["workspace: needs a real HM3D workspace (GLB files, built datasets); skipped otherwise"]

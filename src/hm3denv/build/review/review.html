@@ -1,0 +1,644 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>HM3D - storey review</title>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font:13px/1.45 ui-sans-serif,system-ui,Segoe UI,sans-serif;
+  background:#16181d;color:#d8dce3;overflow:hidden}
+button{font:inherit;color:#d8dce3;background:#2a2f38;border:1px solid #3a414e;
+  border-radius:5px;padding:3px 8px;cursor:pointer}
+button:hover{background:#343b46}
+button.on{background:#3b6ea5;border-color:#4d86c4;color:#fff}
+input,select{font:inherit;color:#d8dce3;background:#12141a;border:1px solid #3a414e;
+  border-radius:4px;padding:2px 5px}
+input[type=number]{width:62px}
+kbd{background:#2a2f38;border:1px solid #3a414e;border-bottom-width:2px;border-radius:3px;
+  padding:0 4px;font:11px ui-monospace,monospace}
+#app{display:grid;height:100%;
+  grid-template-columns:232px minmax(0,1fr) 96px 288px;
+  grid-template-rows:38px minmax(0,1fr) 132px}
+header{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 10px;
+  border-bottom:1px solid #2a2f38;background:#1b1e24}
+header b{font-size:14px}
+.sp{flex:1}
+.muted{color:#8b94a3}
+.warn{color:#e3a857}
+
+/* ---------------- queue ---------------- */
+#queue{border-right:1px solid #2a2f38;display:flex;flex-direction:column;min-height:0}
+#qbar{display:flex;gap:4px;padding:6px;border-bottom:1px solid #2a2f38;flex-wrap:wrap}
+#qbar button{padding:2px 6px;font-size:12px}
+#qlist{overflow:auto;flex:1}
+.qi{padding:5px 8px;border-bottom:1px solid #212530;cursor:pointer;display:flex;
+  align-items:center;gap:6px}
+.qi:hover{background:#1f232b}
+.qi.sel{background:#2b3a4d}
+.qi .nm{flex:1;font:12px ui-monospace,monospace;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.todo{background:#4a5260}.ok{background:#58a55c}.fixed{background:#3b8fd4}.bad{background:#c9584f}
+.score{font-size:11px;color:#e3a857;min-width:14px;text-align:right}
+
+/* ---------------- output ---------------- */
+#stage{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0}
+#obar{display:flex;gap:6px;align-items:center;padding:6px 8px;border-bottom:1px solid #2a2f38}
+#canvasWrap{flex:1;position:relative;background:#0d0f13;overflow:hidden;
+  display:flex;align-items:center;justify-content:center}
+#out,#prev{max-width:100%;max-height:100%;image-rendering:pixelated;
+  box-shadow:0 0 0 1px #2a2f38}
+#prev{display:none}
+#ostat{position:absolute;left:8px;bottom:6px;font:11px ui-monospace,monospace;
+  color:#8b94a3;background:#0d0f13cc;padding:2px 6px;border-radius:4px}
+
+/* ---------------- z ruler ---------------- */
+#zwrap{border-left:1px solid #2a2f38;border-right:1px solid #2a2f38;position:relative}
+#zc{width:100%;height:100%;display:block;cursor:ns-resize}
+
+/* ---------------- panel ---------------- */
+#panel{border-left:0;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:10px}
+.sec{border:1px solid #2a2f38;border-radius:6px;padding:7px}
+.sec h4{margin:0 0 6px;font-size:12px;color:#9aa4b4;font-weight:600;
+  text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.st{display:flex;gap:4px;align-items:center;margin-bottom:4px}
+.st b{width:14px;color:#8b94a3}
+.st .h{font:11px ui-monospace,monospace;color:#8b94a3;width:46px}
+#bigsave{width:100%;padding:6px;background:#3b6ea5;border-color:#4d86c4;color:#fff}
+
+/* ---------------- filmstrip ---------------- */
+#strip{grid-column:1/-1;border-top:1px solid #2a2f38;background:#1b1e24;
+  overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding:5px}
+.th{display:inline-block;margin-right:3px;text-align:center;cursor:pointer;
+  border:2px solid transparent;border-radius:4px;padding:1px;vertical-align:top}
+.th img{display:block;width:60px;background:#fff;image-rendering:pixelated}
+.th .z{font:10px ui-monospace,monospace;color:#8b94a3}
+.th.slab .z{color:#e3a857}
+.th.sel{border-color:#3b6ea5;background:#243449}
+.th.cur{border-color:#e3a857}
+
+/* ---------------- modal ---------------- */
+#modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;
+  justify-content:center;z-index:9}
+#modal>div{background:#1b1e24;border:1px solid #3a414e;border-radius:8px;padding:14px;
+  max-width:92vw;max-height:92vh;overflow:auto}
+.cand{display:inline-block;margin:6px;text-align:center;cursor:pointer;padding:6px;
+  border:2px solid #3a414e;border-radius:6px}
+.cand:hover{border-color:#4d86c4}
+.cand img{display:block;max-width:240px;max-height:240px;background:#fff}
+</style>
+
+<div id=app>
+  <header>
+    <b>Storey review</b>
+    <span id=hname class=muted>no scene selected</span>
+    <span id=hflag class=warn></span>
+    <span class=sp></span>
+    <span id=prog class=muted></span>
+    <span id=job class=muted></span>
+    <button onclick="help()">? shortcuts</button>
+  </header>
+
+  <div id=queue>
+    <div id=qbar>
+      <button data-f=all class=on>all</button>
+      <button data-f=todo>to review</button>
+      <button data-f=susp>suspicious</button>
+      <button data-f=done>reviewed</button>
+    </div>
+    <div id=qlist></div>
+  </div>
+
+  <div id=stage>
+    <div id=obar>
+      <button data-m=merge class=on>layers</button>
+      <button data-m=map>map</button>
+      <button data-m=old>saved map</button>
+      <span class=sp></span>
+      <label class=muted><input type=checkbox id=showfp checked> footprint</label>
+      <span id=selinfo class=muted></span>
+    </div>
+    <div id=canvasWrap>
+      <canvas id=out></canvas>
+      <img id=prev>
+      <div id=ostat></div>
+    </div>
+  </div>
+
+  <div id=zwrap><canvas id=zc></canvas></div>
+
+  <div id=panel>
+    <div class=sec>
+      <h4>up axis</h4>
+      <div class=row>
+        <button data-up=0>X</button><button data-up=1>Y</button><button data-up=2>Z</button>
+        <span class=sp></span>
+        <button onclick="probe()">probe 3 axes</button>
+      </div>
+      <div class=row style="margin-top:6px">
+        <button onclick="reslice()">re-slice along this axis</button>
+      </div>
+      <div id=upnote class=muted style="margin-top:4px;font-size:11px"></div>
+    </div>
+
+    <div class=sec>
+      <h4>storeys</h4>
+      <div id=stlist></div>
+      <div class=row style="margin-top:6px">
+        <button onclick="addFromSel()">+ from selection</button>
+        <button onclick="useAuto()">use auto</button>
+        <button onclick="suggest()">suggest storeys</button>
+      </div>
+    </div>
+
+    <div class=sec>
+      <h4>build maps</h4>
+      <div class=row>
+        <label class=muted>robot</label>
+        <input type=number id=robot value=0.626 step=0.01 min=0.05>
+        <label class=muted>res</label>
+        <select id=res><option value=0.02>2cm</option><option value=0.05>5cm</option></select>
+      </div>
+      <label class=muted style="display:block;margin-top:6px" title="Old method: paint black wherever there is no floor surface. Blocks the outdoors and stairwells, but scan holes indoors become black too.">
+        <input type=checkbox id=floormask> floor mask (old method)
+      </label>
+      <div class=row style="margin-top:6px">
+        <button onclick="renderAll()">build and write maps/</button>
+      </div>
+    </div>
+
+    <div class=sec>
+      <h4>verdict</h4>
+      <div class=row>
+        <button data-s=ok>auto is right</button>
+        <button data-s=fixed>fixed</button>
+        <button data-s=bad>drop scene</button>
+      </div>
+      <input id=note placeholder="note" style="width:100%;margin-top:6px">
+    </div>
+
+    <button id=bigsave onclick="saveNext()">save &amp; next scene &nbsp;<kbd>Enter</kbd></button>
+  </div>
+
+  <div id=strip></div>
+</div>
+
+<div id=modal onclick="if(event.target.id=='modal')closeModal()"><div id=modalBody></div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const el = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
+
+const G = {
+  scenes: [], filter: 'all', name: null, sc: null,
+  layers: [], sel: new Set(), cur: 0, anchor: 0,
+  up: 2, storeys: [], status: 'todo', robot: 0.626, mode: 'merge',
+  imgs: new Map(), fp: null, W: 1, H: 1, step: 0.1, dirty: false, peaks: new Set(),
+};
+
+// ---------------------------------------------------------------- queue
+
+async function loadScenes() {
+  const r = await (await fetch('/api/scenes')).json();
+  G.scenes = r.scenes;
+  drawQueue();
+  if (!G.name && G.scenes.length) open(visible()[0].name);
+}
+
+function visible() {
+  const f = G.filter;
+  let v = G.scenes.filter(s =>
+    f === 'all' ? true :
+    f === 'todo' ? s.status === 'todo' :
+    f === 'susp' ? s.score > 0 :
+    s.status !== 'todo');
+  if (f === 'susp') v = v.slice().sort((a, b) => b.score - a.score);
+  return v;
+}
+
+function drawQueue() {
+  const L = $('#qlist'); L.innerHTML = '';
+  for (const s of visible()) {
+    const d = el('div', 'qi' + (s.name === G.name ? ' sel' : ''));
+    d.innerHTML = `<span class="dot ${s.status}"></span>
+      <span class=nm>${s.name}</span>
+      <span class=muted style="font-size:11px">${s.n_fixed || s.auto_storeys}s</span>
+      <span class=score>${s.score || ''}</span>`;
+    d.title = s.flags.join('\n') || 'nothing suspicious';
+    d.onclick = () => open(s.name);
+    L.appendChild(d);
+  }
+  const done = G.scenes.filter(s => s.status !== 'todo').length;
+  $('#prog').textContent = `${done}/${G.scenes.length} reviewed`;
+}
+
+// ---------------------------------------------------------------- open a scene
+
+async function open(name) {
+  if (G.dirty && !confirm('This scene is not saved. Discard the changes?')) return;
+  const sc = await (await fetch('/api/scene?name=' + name)).json();
+  G.name = name; G.sc = sc; G.layers = sc.layers; G.step = sc.step;
+  G.W = sc.W || 1; G.H = sc.H || 1;
+  G.imgs.clear(); G.sel.clear(); G.cur = 0; G.anchor = 0; G.dirty = false;
+
+  const rv = sc.review;
+  // not reviewed yet: use the axis slice.py detected rather than assuming Z (a Y-up
+  // scene would be saved with the wrong axis on "auto is right")
+  G.up = rv && rv.up != null ? rv.up : (sc.auto_up != null ? sc.auto_up : 2);
+  G.status = rv ? rv.status : 'todo';
+  G.storeys = rv && rv.storeys.length ? rv.storeys.map(s => ({ ...s }))
+    : sc.auto.map(a => ({ floor_z: a.floor_z, ceil_z: a.ceil_z }));
+  $('#note').value = rv ? (rv.note || '') : '';
+  G.robot = rv && rv.robot_h ? rv.robot_h : parseFloat($('#robot').value);
+  $('#robot').value = G.robot;
+
+  G.fp = new Image();
+  G.fp.onload = draw;
+  G.fp.src = '/footprint/' + name;
+
+  $('#hname').textContent = name;
+  $('#hflag').textContent = sc.flags.join(' · ');
+  $('#upnote').textContent = `${G.layers.length} layers, ${span().toFixed(1)} m high, step ${G.step} m`;
+  setMode('merge');
+  drawStrip(); drawStoreys(); drawQueue(); syncBtns(); drawZ(); draw();
+}
+
+const span = () => G.layers.length ? G.layers.at(-1).z - G.layers[0].z : 0;
+const zOf = i => G.layers[Math.max(0, Math.min(G.layers.length - 1, i))].z;
+
+function syncBtns() {
+  document.querySelectorAll('[data-up]').forEach(b =>
+    b.classList.toggle('on', +b.dataset.up === G.up));
+  document.querySelectorAll('[data-s]').forEach(b =>
+    b.classList.toggle('on', b.dataset.s === G.status));
+  document.querySelectorAll('[data-m]').forEach(b =>
+    b.classList.toggle('on', b.dataset.m === G.mode));
+}
+
+// ---------------------------------------------------------------- filmstrip
+
+function drawStrip() {
+  const S = $('#strip'); S.innerHTML = '';
+  G.layers.forEach(l => {
+    const d = el('div', 'th' + (l.slab ? ' slab' : ''));
+    d.dataset.i = l.i;
+    d.innerHTML = `<img loading=lazy src="/thumb/${G.name}/${l.i}">
+      <div class=z>${l.z.toFixed(2)}</div>`;
+    d.onclick = e => pick(l.i, e.shiftKey, e.ctrlKey || e.metaKey);
+    S.appendChild(d);
+  });
+  markStrip();
+}
+
+function markStrip() {
+  document.querySelectorAll('#strip .th').forEach(d => {
+    const i = +d.dataset.i;
+    d.classList.toggle('sel', G.sel.has(i));
+    d.classList.toggle('cur', i === G.cur);
+  });
+  const c = document.querySelector(`#strip .th[data-i="${G.cur}"]`);
+  if (c) c.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  const n = G.sel.size;
+  $('#selinfo').textContent = n
+    ? `${n} layers  ${zOf(Math.min(...G.sel)).toFixed(2)} .. ${(zOf(Math.max(...G.sel)) + G.step).toFixed(2)} m`
+    : 'no layer selected';
+}
+
+function pick(i, shift, toggle) {
+  if (shift) {
+    const a = Math.min(G.anchor, i), b = Math.max(G.anchor, i);
+    G.sel.clear();
+    for (let k = a; k <= b; k++) G.sel.add(k);
+  } else if (toggle) {
+    G.sel.has(i) ? G.sel.delete(i) : G.sel.add(i);
+    G.anchor = i;
+  } else {
+    G.sel.clear(); G.sel.add(i); G.anchor = i;
+  }
+  G.cur = i;
+  markStrip(); drawZ(); draw();
+}
+
+// ---------------------------------------------------------------- z ruler
+
+function drawZ() {
+  const c = $('#zc'), w = c.clientWidth, h = c.clientHeight;
+  c.width = w * devicePixelRatio; c.height = h * devicePixelRatio;
+  const x = c.getContext('2d');
+  x.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  x.clearRect(0, 0, w, h);
+  const L = G.layers.length;
+  if (!L) return;
+  const rh = h / L;
+  const yOf = i => h - (i + 1) * rh;          // layer 0 at the bottom = real heights
+
+  // density bars: floors/ceilings spike, the space between them is low
+  G.layers.forEach(l => {
+    x.fillStyle = G.peaks.has(l.i) ? '#e3a857' : l.slab ? '#a8823f' : '#4a5260';
+    x.fillRect(0, yOf(l.i) + 0.5, Math.max(1, l.ratio * w), Math.max(1, rh - 1));
+  });
+  // selection
+  if (G.sel.size) {
+    const a = Math.min(...G.sel), b = Math.max(...G.sel);
+    x.fillStyle = '#3b6ea555';
+    x.fillRect(0, yOf(b), w, (b - a + 1) * rh);
+  }
+  // confirmed storeys
+  x.strokeStyle = '#58a55c'; x.lineWidth = 2;
+  G.storeys.forEach((s, k) => {
+    const y0 = h - ((s.ceil_z - G.layers[0].z) / G.step) * rh;
+    const y1 = h - ((s.floor_z - G.layers[0].z) / G.step) * rh;
+    x.fillStyle = '#58a55c22'; x.fillRect(0, y0, w, y1 - y0);
+    x.beginPath(); x.moveTo(0, y1); x.lineTo(w, y1); x.stroke();
+    x.fillStyle = '#58a55c'; x.font = '10px ui-monospace,monospace';
+    x.fillText('S' + (k + 1), 3, y1 - 3);
+  });
+  // current layer
+  x.strokeStyle = '#e3a857'; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(0, yOf(G.cur) + rh / 2); x.lineTo(w, yOf(G.cur) + rh / 2); x.stroke();
+}
+
+(function zDrag() {
+  const c = $('#zc');
+  let down = false;
+  const idx = e => {
+    const r = c.getBoundingClientRect();
+    const L = G.layers.length;
+    return Math.max(0, Math.min(L - 1, L - 1 - Math.floor((e.clientY - r.top) / (r.height / L))));
+  };
+  c.onmousedown = e => { down = true; G.anchor = idx(e); pick(idx(e), false, false); };
+  c.onmousemove = e => { if (down) pick(idx(e), true, false); };
+  addEventListener('mouseup', () => down = false);
+  addEventListener('resize', () => { drawZ(); draw(); });
+})();
+
+// ---------------------------------------------------------------- output
+
+function img(i) {
+  if (!G.imgs.has(i)) {
+    const im = new Image();
+    im.onload = draw;
+    im.src = `/slice/${G.name}/${i}`;
+    G.imgs.set(i, im);
+  }
+  return G.imgs.get(i);
+}
+
+function setMode(m) {
+  G.mode = m;
+  $('#out').style.display = m === 'merge' ? 'block' : 'none';
+  $('#prev').style.display = m === 'merge' ? 'none' : 'block';
+  syncBtns();
+  if (m === 'merge') draw();
+  if (m === 'map') previewMap();
+  if (m === 'old') {
+    const a = G.sc.auto;
+    $('#prev').src = a.length ? '/map/' + G.name + '/' + a[0].png.split('/').pop() : '';
+    $('#ostat').textContent = a.length
+      ? `saved map: ${a.length} storeys, ${a.map(s => s.free_m2 + 'm2').join(' / ')}`
+      : 'no saved map for this scene';
+  }
+}
+
+function draw() {
+  if (G.mode !== 'merge') return;
+  const c = $('#out'), x = c.getContext('2d');
+  c.width = G.W; c.height = G.H;
+  x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+  x.globalCompositeOperation = 'multiply';
+  if ($('#showfp').checked && G.fp && G.fp.complete) {
+    x.globalAlpha = 0.12; x.drawImage(G.fp, 0, 0, c.width, c.height);
+  }
+  // other selected layers faint, the current one dark -> shows what this layer adds
+  x.globalAlpha = 0.34;
+  for (const i of G.sel) if (i !== G.cur) put(x, i);
+  x.globalAlpha = 1;
+  if (G.sel.has(G.cur) || !G.sel.size) put(x, G.cur);
+  x.globalCompositeOperation = 'source-over';
+  $('#ostat').textContent =
+    `layer ${G.cur} z=${zOf(G.cur).toFixed(2)} m  density ${(G.layers[G.cur]?.ratio * 100 || 0).toFixed(0)}%`;
+}
+
+function put(x, i) {
+  const im = img(i);
+  if (im.complete && im.naturalWidth) x.drawImage(im, 0, 0, G.W, G.H);
+}
+
+async function previewMap(k) {
+  G.shown = k || 0;
+  const s = G.storeys[k || 0];
+  if (!s) { $('#ostat').textContent = 'no storey confirmed'; return; }
+  const q = new URLSearchParams({
+    name: G.name, up: G.up, floor_z: s.floor_z, ceil_z: s.ceil_z,
+    robot_h: $('#robot').value, res: 0.05, oversample: 2.0,
+    floor_mask: $('#floormask').checked ? 1 : 0,
+  });
+  $('#ostat').textContent = 'building the map...';
+  const r = await fetch('/api/preview.png?' + q);
+  const st = JSON.parse(r.headers.get('X-Stats') || '{}');
+  $('#prev').src = URL.createObjectURL(await r.blob());
+  $('#ostat').textContent = `storey ${(k || 0) + 1}: floor ${s.floor_z.toFixed(2)} ceiling ${s.ceil_z.toFixed(2)}`
+    + ` | band ${st.z_lo?.toFixed(2)}..${st.z_hi?.toFixed(2)}`
+    + ` | free ${st.free_m2?.toFixed(0)} m2 (quick preview @5cm)`;
+}
+
+// ---------------------------------------------------------------- storeys
+
+function drawStoreys() {
+  const L = $('#stlist'); L.innerHTML = '';
+  G.storeys.sort((a, b) => a.floor_z - b.floor_z);
+  G.storeys.forEach((s, k) => {
+    const d = el('div', 'st');
+    d.innerHTML = `<b>${k + 1}</b>`;
+    const f = el('input'), c = el('input');
+    f.type = c.type = 'number'; f.step = c.step = '0.01';
+    f.value = s.floor_z.toFixed(2); c.value = s.ceil_z.toFixed(2);
+    f.onchange = () => { s.floor_z = +f.value; touch(); };
+    c.onchange = () => { s.ceil_z = +c.value; touch(); };
+    const h = el('span', 'h'); h.textContent = (s.ceil_z - s.floor_z).toFixed(2) + 'm';
+    const v = el('button'); v.textContent = 'view';
+    v.onclick = () => { setMode('map'); previewMap(k); };
+    const x = el('button'); x.textContent = '×';
+    x.onclick = () => { G.storeys.splice(k, 1); touch(); };
+    d.append(f, c, h, v, x);
+    L.appendChild(d);
+  });
+  if (!G.storeys.length) L.innerHTML = '<span class=muted>no storeys yet</span>';
+}
+
+function touch() { G.dirty = true; drawStoreys(); drawZ(); }
+
+async function addFromSel() {
+  if (!G.sel.size) return alert('No layer selected. Drag on the z ruler or shift-click the filmstrip.');
+  const a = Math.min(...G.sel), b = Math.max(...G.sel);
+  if (a === b) return alert('Select at least 2 layers: a floor layer and a ceiling layer.');
+  // snap the layer edges to the real surface heights, as slice.py does, so the robot band stays off the floor
+  const q = k => fetch(`/api/refine?name=${G.name}&up=${G.up}&z=${zOf(k)}&step=${G.step}`)
+    .then(r => r.json()).then(r => r.z);
+  const [fz, cz] = await Promise.all([q(a), q(b)]);
+  // pressing "+ from selection" twice on the same selection would add a duplicate storey
+  // and later write two identical maps -- refuse it here
+  if (G.storeys.some(s => Math.abs(s.floor_z - fz) < 0.1 && Math.abs(s.ceil_z - cz) < 0.1))
+    return alert('This storey is already in the list.');
+  G.storeys.push({ floor_z: +fz.toFixed(3), ceil_z: +cz.toFixed(3) });
+  touch();
+}
+
+function useAuto() {
+  G.storeys = G.sc.auto.map(a => ({ floor_z: a.floor_z, ceil_z: a.ceil_z }));
+  touch();
+}
+
+async function suggest() {
+  // relative peaks of the density curve -> also finds storeys of tall buildings that auto missed
+  $('#job').textContent = 'suggesting...';
+  const r = await (await fetch(`/api/suggest?name=${G.name}&up=${G.up}`)).json();
+  $('#job').textContent = `suggested ${r.storeys.length} storeys from ${r.peaks.length} density peaks`;
+  G.peaks = new Set(r.peaks);
+  G.storeys = r.storeys;
+  touch();
+}
+
+// ---------------------------------------------------------------- job
+
+async function job(id, done) {
+  const r = await (await fetch('/api/job?id=' + id)).json();
+  $('#job').textContent = r.msg || '';
+  if (r.state === 'run') return setTimeout(() => job(id, done), 400);
+  if (r.state === 'error') return alert(r.msg);
+  done(r.result);
+}
+
+async function reslice() {
+  if (!confirm(`Re-slice all layers along ${'XYZ'[G.up]}? Overwrites slices/ and profile.csv (~20 s).`)) return;
+  const r = await (await fetch('/api/reslice', {
+    method: 'POST', body: JSON.stringify({ name: G.name, up: G.up })
+  })).json();
+  job(r.id, res => { G.dirty = false; open(G.name); alert(`Done: ${res.layers} layers, ${res.slabs} slabs.`); });
+}
+
+async function renderAll() {
+  if (!G.storeys.length) return alert('No storey confirmed.');
+  const r = await (await fetch('/api/render', {
+    method: 'POST', body: JSON.stringify({
+      name: G.name, up: G.up, storeys: G.storeys,
+      robot_h: +$('#robot').value, res: +$('#res').value,
+      floor_mask: $('#floormask').checked,
+    })
+  })).json();
+  job(r.id, res => {
+    setMode('old');
+    $('#prev').src = `/map/${G.name}/${res.maps[0].png}?t=` + Date.now();
+    $('#ostat').textContent = 'built: ' + res.maps.map(m => `S${m.k} ${m.free_m2}m2`).join(' / ');
+  });
+}
+
+async function save(status) {
+  G.status = status || G.status;
+  if (G.status === 'todo') G.status = 'fixed';
+  await fetch('/api/review', {
+    method: 'POST', body: JSON.stringify({
+      name: G.name, up: G.up, storeys: G.storeys, status: G.status,
+      note: $('#note').value, robot_h: +$('#robot').value,
+    })
+  });
+  G.dirty = false;
+  const s = G.scenes.find(s => s.name === G.name);
+  if (s) { s.status = G.status; s.n_fixed = G.storeys.length; }
+  drawQueue(); syncBtns();
+}
+
+async function saveNext() {
+  await save();
+  const v = visible(), i = v.findIndex(s => s.name === G.name);
+  const nx = v.slice(i + 1).find(s => s.status === 'todo') || v[i + 1];
+  if (nx) open(nx.name); else $('#job').textContent = 'no more scenes in this filter';
+}
+
+// ---------------------------------------------------------------- up axis
+
+async function probe() {
+  $('#job').textContent = 'probing the 3 axes...';
+  const r = await (await fetch('/api/axis?name=' + G.name)).json();
+  job(r.id, res => {
+    let h = `<h3 style="margin:0 0 4px">Which axis points up?</h3>
+      <div class=muted style="margin-bottom:8px">Pick the image that looks most like a FLOOR PLAN
+      (closed, covering the whole building). The other two are vertical sections.</div>`;
+    res.cands.forEach(c => {
+      h += `<div class=cand onclick="setUp(${c.axis})">
+        <img src="${c.png}">
+        <div><b>${c.name}</b>${c.axis === res.auto ? ' <span class=warn>(auto)</span>' : ''}</div>
+        <div class=muted style="font-size:11px">fill ${(c.fill * 100).toFixed(0)}% · height ${c.span} m</div>
+      </div>`;
+    });
+    $('#modalBody').innerHTML = h;
+    $('#modal').style.display = 'flex';
+  });
+}
+
+function setUp(a) {
+  G.up = a; G.dirty = true; syncBtns(); closeModal();
+  if (confirm(`Up axis = ${'XYZ'[a]}. Re-slice the layers now?`)) reslice();
+}
+const closeModal = () => $('#modal').style.display = 'none';
+
+function help() {
+  $('#modalBody').innerHTML = `<h3 style="margin:0 0 8px">Shortcuts</h3>
+  <table style="border-spacing:8px 3px">
+  <tr><td><kbd>&larr;</kbd> <kbd>&rarr;</kbd></td><td>previous / next layer</td></tr>
+  <tr><td><kbd>Shift</kbd>+<kbd>&larr;&rarr;</kbd></td><td>extend the selection</td></tr>
+  <tr><td><kbd>Space</kbd></td><td>add / remove the layer from the selection</td></tr>
+  <tr><td><kbd>A</kbd></td><td>turn the selection into a storey</td></tr>
+  <tr><td><kbd>1</kbd>..<kbd>9</kbd></td><td>view that storey's map</td></tr>
+  <tr><td><kbd>M</kbd></td><td>switch layers / map / saved map</td></tr>
+  <tr><td><kbd>G</kbd></td><td>suggest storeys from density peaks</td></tr>
+  <tr><td><kbd>X</kbd></td><td>probe the 3 axes to find the up axis</td></tr>
+  <tr><td><kbd>R</kbd></td><td>build and write maps/</td></tr>
+  <tr><td><kbd>O</kbd></td><td>mark "auto is right"</td></tr>
+  <tr><td><kbd>Enter</kbd></td><td>save and go to the next scene to review</td></tr>
+  <tr><td><kbd>J</kbd> <kbd>K</kbd></td><td>previous / next scene</td></tr>
+  </table>`;
+  $('#modal').style.display = 'flex';
+}
+
+// ---------------------------------------------------------------- keys & buttons
+
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  const L = G.layers.length; if (!L) return;
+  const k = e.key.toLowerCase();
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    const n = Math.max(0, Math.min(L - 1, G.cur + (e.key === 'ArrowRight' ? 1 : -1)));
+    if (e.shiftKey) pick(n, true, false); else { G.anchor = n; pick(n, false, false); }
+    e.preventDefault();
+  } else if (e.key === ' ') { pick(G.cur, false, true); e.preventDefault(); }
+  else if (k === 'a') addFromSel();
+  else if (k === 'm') setMode(G.mode === 'merge' ? 'map' : G.mode === 'map' ? 'old' : 'merge');
+  else if (k === 'x') probe();
+  else if (k === 'g') suggest();
+  else if (k === 'r') renderAll();
+  else if (k === 'o') save('ok');
+  else if (k === 'escape') closeModal();
+  else if (e.key === 'Enter') saveNext();
+  else if (k === 'j' || k === 'k') {
+    const v = visible(), i = v.findIndex(s => s.name === G.name);
+    const n = v[i + (k === 'k' ? 1 : -1)]; if (n) open(n.name);
+  } else if (k >= '1' && k <= '9') { setMode('map'); previewMap(+k - 1); }
+});
+
+$('#qbar').onclick = e => {
+  if (!e.target.dataset.f) return;
+  G.filter = e.target.dataset.f;
+  document.querySelectorAll('#qbar button').forEach(b => b.classList.toggle('on', b === e.target));
+  drawQueue();
+};
+$('#obar').onclick = e => { if (e.target.dataset.m) setMode(e.target.dataset.m); };
+$('#panel').onclick = e => {
+  if (e.target.dataset.up != null) { G.up = +e.target.dataset.up; G.dirty = true; syncBtns(); }
+  if (e.target.dataset.s) save(e.target.dataset.s);
+};
+$('#showfp').onchange = draw;
+$('#floormask').onchange = () => { if (G.mode === 'map') previewMap(G.shown || 0); };
+addEventListener('beforeunload', e => { if (G.dirty) e.preventDefault(); });
+
+loadScenes();
+</script>

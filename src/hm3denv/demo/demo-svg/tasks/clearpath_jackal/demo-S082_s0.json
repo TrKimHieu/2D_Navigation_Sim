@@ -1,0 +1,189 @@
+{
+ "schema_version": "2.0",
+ "dataset": "demo-svg",
+ "env": "svg",
+ "map_id": "demo-S082_s0",
+ "robot": "clearpath_jackal",
+ "split": "train",
+ "height_class": "h36",
+ "success_radius": 0.2,
+ "clearance": 0.05,
+ "planning": {
+  "plan_res": 0.04,
+  "neighbourhood": 16,
+  "max_anisotropy_error": 0.028,
+  "note": "geodesic on C_disk (circumradius + clearance)"
+ },
+ "tasks": [
+  {
+   "id": 0,
+   "start": {
+    "x": 8.48,
+    "y": 8.72,
+    "theta": 1.4639
+   },
+   "goal": {
+    "x": 6.56,
+    "y": 5.84
+   },
+   "geodesic_m": 5.4415,
+   "euclidean_m": 3.4613,
+   "labels": {
+    "gdr": 1.5721
+   }
+  },
+  {
+   "id": 1,
+   "start": {
+    "x": 8.44,
+    "y": 4.68,
+    "theta": -2.4382
+   },
+   "goal": {
+    "x": 11.84,
+    "y": 9.16
+   },
+   "geodesic_m": 6.2207,
+   "euclidean_m": 5.6241,
+   "labels": {
+    "gdr": 1.1061
+   }
+  },
+  {
+   "id": 2,
+   "start": {
+    "x": 15.2,
+    "y": 7.96,
+    "theta": -2.3696
+   },
+   "goal": {
+    "x": 5.72,
+    "y": 11.6
+   },
+   "geodesic_m": 12.251,
+   "euclidean_m": 10.1548,
+   "labels": {
+    "gdr": 1.2064
+   }
+  },
+  {
+   "id": 3,
+   "start": {
+    "x": 8.08,
+    "y": 15.6,
+    "theta": -0.9635
+   },
+   "goal": {
+    "x": 4.52,
+    "y": 2.64
+   },
+   "geodesic_m": 15.8866,
+   "euclidean_m": 13.4401,
+   "labels": {
+    "gdr": 1.182
+   }
+  },
+  {
+   "id": 4,
+   "start": {
+    "x": 1.64,
+    "y": 6.08,
+    "theta": -0.6598
+   },
+   "goal": {
+    "x": 10.24,
+    "y": 3.6
+   },
+   "geodesic_m": 10.11,
+   "euclidean_m": 8.9504,
+   "labels": {
+    "gdr": 1.1295
+   }
+  },
+  {
+   "id": 5,
+   "start": {
+    "x": 12.96,
+    "y": 10.08,
+    "theta": 0.3067
+   },
+   "goal": {
+    "x": 16.04,
+    "y": 9.16
+   },
+   "geodesic_m": 7.2468,
+   "euclidean_m": 3.2145,
+   "labels": {
+    "gdr": 2.2544
+   }
+  },
+  {
+   "id": 6,
+   "start": {
+    "x": 12.56,
+    "y": 5.32,
+    "theta": 1.3521
+   },
+   "goal": {
+    "x": 8.72,
+    "y": 13.2
+   },
+   "geodesic_m": 10.3449,
+   "euclidean_m": 8.7658,
+   "labels": {
+    "gdr": 1.1801
+   }
+  },
+  {
+   "id": 7,
+   "start": {
+    "x": 2.16,
+    "y": 11.44,
+    "theta": -3.0332
+   },
+   "goal": {
+    "x": 17.52,
+    "y": 9.36
+   },
+   "geodesic_m": 18.8819,
+   "euclidean_m": 15.5002,
+   "labels": {
+    "gdr": 1.2182
+   }
+  },
+  {
+   "id": 8,
+   "start": {
+    "x": 9.28,
+    "y": 1.52,
+    "theta": 0.2336
+   },
+   "goal": {
+    "x": 9.44,
+    "y": 8.76
+   },
+   "geodesic_m": 8.0057,
+   "euclidean_m": 7.2418,
+   "labels": {
+    "gdr": 1.1055
+   }
+  },
+  {
+   "id": 9,
+   "start": {
+    "x": 4.92,
+    "y": 10.28,
+    "theta": -0.4671
+   },
+   "goal": {
+    "x": 12.0,
+    "y": 12.76
+   },
+   "geodesic_m": 10.6963,
+   "euclidean_m": 7.5018,
+   "labels": {
+    "gdr": 1.4258
+   }
+  }
+ ]
+}

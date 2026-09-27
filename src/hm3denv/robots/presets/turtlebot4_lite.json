@@ -1,0 +1,259 @@
+{
+ "schema_version": "1.0",
+ "id": "turtlebot4_lite",
+ "name": "Clearpath/iRobot TurtleBot 4 Lite",
+ "footprint": {
+  "type": "polygon",
+  "points": [
+   [
+    -0.0074,
+    -0.1654
+   ],
+   [
+    -0.0024,
+    -0.1614
+   ],
+   [
+    0.0016,
+    -0.1644
+   ],
+   [
+    0.0016,
+    -0.1664
+   ],
+   [
+    0.0326,
+    -0.1704
+   ],
+   [
+    0.0466,
+    -0.1704
+   ],
+   [
+    0.0636,
+    -0.1664
+   ],
+   [
+    0.0846,
+    -0.1564
+   ],
+   [
+    0.1166,
+    -0.1334
+   ],
+   [
+    0.1386,
+    -0.1114
+   ],
+   [
+    0.1546,
+    -0.0884
+   ],
+   [
+    0.1656,
+    -0.0654
+   ],
+   [
+    0.1756,
+    -0.0274
+   ],
+   [
+    0.1776,
+    -0.0054
+   ],
+   [
+    0.1756,
+    0.0276
+   ],
+   [
+    0.1656,
+    0.0656
+   ],
+   [
+    0.1526,
+    0.0916
+   ],
+   [
+    0.1306,
+    0.1206
+   ],
+   [
+    0.1106,
+    0.1386
+   ],
+   [
+    0.0876,
+    0.1546
+   ],
+   [
+    0.0566,
+    0.1686
+   ],
+   [
+    0.0326,
+    0.1706
+   ],
+   [
+    0.0016,
+    0.1656
+   ],
+   [
+    0.0016,
+    0.1636
+   ],
+   [
+    -0.0014,
+    0.1616
+   ],
+   [
+    -0.0074,
+    0.1656
+   ],
+   [
+    -0.0324,
+    0.1626
+   ],
+   [
+    -0.0524,
+    0.1576
+   ],
+   [
+    -0.0824,
+    0.1436
+   ],
+   [
+    -0.1054,
+    0.1276
+   ],
+   [
+    -0.1224,
+    0.1116
+   ],
+   [
+    -0.1314,
+    0.1006
+   ],
+   [
+    -0.1444,
+    0.0806
+   ],
+   [
+    -0.1544,
+    0.0606
+   ],
+   [
+    -0.1594,
+    0.0456
+   ],
+   [
+    -0.1654,
+    0.0066
+   ],
+   [
+    -0.1634,
+    -0.0254
+   ],
+   [
+    -0.1594,
+    -0.0454
+   ],
+   [
+    -0.1544,
+    -0.0604
+   ],
+   [
+    -0.1404,
+    -0.0874
+   ],
+   [
+    -0.1224,
+    -0.1114
+   ],
+   [
+    -0.1054,
+    -0.1274
+   ],
+   [
+    -0.0934,
+    -0.1364
+   ],
+   [
+    -0.0624,
+    -0.1534
+   ],
+   [
+    -0.0334,
+    -0.1624
+   ]
+  ]
+ },
+ "height": 0.192,
+ "height_class": "h36",
+ "drive": "differential",
+ "limits": {
+  "v_max": 0.31,
+  "v_min": -0.31,
+  "vy_max": 0.0,
+  "w_max": 1.9
+ },
+ "lidar": {
+  "model": "SLAMTEC RPLIDAR A1M8",
+  "range_min": 0.15,
+  "range_max": 12.0,
+  "fov": 6.2832,
+  "beams": 360
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://github.com/turtlebot/turtlebot4/blob/humble/turtlebot4_description/urdf/lite/turtlebot4.urdf.xacro",
+   "method": "every visual geometry of the URDF (joints = 0) projected onto the floor of frame 'base_link' at 1 mm, outer outline, simplified to 1 mm (hm3d robots import-urdf)"
+  },
+  "height": {
+   "kind": "official",
+   "url": "https://turtlebot.github.io/turtlebot4-user-manual/overview/features.html"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://turtlebot.github.io/turtlebot4-user-manual/overview/features.html",
+   "note": "default safe mode"
+  },
+  "limits.v_min": {
+   "kind": "estimated",
+   "method": "The manufacturer only publishes the maximum speed; the maximum reverse speed is assumed equal to it."
+  },
+  "limits.vy_max": {
+   "kind": "official",
+   "url": "https://turtlebot.github.io/turtlebot4-user-manual/overview/features.html",
+   "note": "differential drive"
+  },
+  "limits.w_max": {
+   "kind": "official",
+   "url": "https://turtlebot.github.io/turtlebot4-user-manual/overview/features.html"
+  },
+  "lidar": {
+   "kind": "official",
+   "url": "https://turtlebot.github.io/turtlebot4-user-manual/overview/features.html"
+  },
+  "lidar.range_min": {
+   "kind": "official",
+   "url": "https://bucket-download.slamtec.com/d1e428e7efbdcd65a8ea111061794fb8d4ccd3a0/LD108_SLAMTEC_rplidar_datasheet_A1M8_v3.0_en.pdf"
+  },
+  "lidar.fov": {
+   "kind": "official",
+   "url": "https://bucket-download.slamtec.com/d1e428e7efbdcd65a8ea111061794fb8d4ccd3a0/LD108_SLAMTEC_rplidar_datasheet_A1M8_v3.0_en.pdf"
+  },
+  "lidar.beams": {
+   "kind": "estimated",
+   "method": "1 beam per degree, close to the ~1 degree angular resolution of low-cost 2D LiDARs; the environment resamples to n_beams beams."
+  },
+  "footprint_simple": {
+   "kind": "estimated",
+   "method": "The Create 3 base is round; the manufacturer gives 342 x 339 mm -> a 342 mm diameter circle is used (enclosing)."
+  }
+ },
+ "footprint_simple": {
+  "type": "circle",
+  "radius": 0.171
+ }
+}

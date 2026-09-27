@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use hm3denv in your research, please cite it as below."
+title: "hm3denv: physically valid indoor robot-navigation environments from HM3D"
+type: software
+authors:
+  - family-names: "Tran"
+    given-names: "Kim Hieu"
+version: 0.8.0
+date-released: 2026-09-27
+license: MIT
+repository-code: "https://github.com/TrKimHieu/2D_Navigation_Sim"
+keywords:
+  - reinforcement learning
+  - robot navigation
+  - gymnasium
+  - HM3D
+  - simulation

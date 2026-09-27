@@ -1,0 +1,319 @@
+{
+ "schema_version": "1.0",
+ "id": "turtlebot3_burger",
+ "name": "ROBOTIS TurtleBot3 Burger",
+ "footprint": {
+  "type": "polygon",
+  "points": [
+   [
+    0.0332,
+    -0.0881
+   ],
+   [
+    0.0322,
+    -0.0711
+   ],
+   [
+    0.0142,
+    -0.0711
+   ],
+   [
+    0.0112,
+    -0.0691
+   ],
+   [
+    0.0112,
+    -0.0631
+   ],
+   [
+    0.0172,
+    -0.0511
+   ],
+   [
+    0.0322,
+    -0.0421
+   ],
+   [
+    0.0322,
+    -0.0311
+   ],
+   [
+    0.0372,
+    -0.0261
+   ],
+   [
+    0.0352,
+    -0.0161
+   ],
+   [
+    0.0372,
+    -0.0141
+   ],
+   [
+    0.0372,
+    -0.0101
+   ],
+   [
+    0.0322,
+    -0.0051
+   ],
+   [
+    0.0322,
+    0.0049
+   ],
+   [
+    0.0372,
+    0.0099
+   ],
+   [
+    0.0352,
+    0.0199
+   ],
+   [
+    0.0372,
+    0.0219
+   ],
+   [
+    0.0372,
+    0.0259
+   ],
+   [
+    0.0322,
+    0.0309
+   ],
+   [
+    0.0322,
+    0.0419
+   ],
+   [
+    0.0172,
+    0.0509
+   ],
+   [
+    0.0112,
+    0.0629
+   ],
+   [
+    0.0112,
+    0.0689
+   ],
+   [
+    0.0142,
+    0.0709
+   ],
+   [
+    0.0332,
+    0.0719
+   ],
+   [
+    0.0322,
+    0.0889
+   ],
+   [
+    -0.0328,
+    0.0889
+   ],
+   [
+    -0.0338,
+    0.0689
+   ],
+   [
+    -0.0378,
+    0.0669
+   ],
+   [
+    -0.0458,
+    0.0689
+   ],
+   [
+    -0.0508,
+    0.0669
+   ],
+   [
+    -0.0538,
+    0.0689
+   ],
+   [
+    -0.0578,
+    0.0689
+   ],
+   [
+    -0.0638,
+    0.0639
+   ],
+   [
+    -0.0728,
+    0.0639
+   ],
+   [
+    -0.0758,
+    0.0619
+   ],
+   [
+    -0.0828,
+    0.0489
+   ],
+   [
+    -0.0958,
+    0.0419
+   ],
+   [
+    -0.0958,
+    0.0309
+   ],
+   [
+    -0.1008,
+    0.0259
+   ],
+   [
+    -0.0988,
+    0.0169
+   ],
+   [
+    -0.1008,
+    0.0139
+   ],
+   [
+    -0.1008,
+    0.0099
+   ],
+   [
+    -0.0958,
+    0.0049
+   ],
+   [
+    -0.0958,
+    -0.0051
+   ],
+   [
+    -0.1008,
+    -0.0101
+   ],
+   [
+    -0.0988,
+    -0.0191
+   ],
+   [
+    -0.1008,
+    -0.0221
+   ],
+   [
+    -0.1008,
+    -0.0261
+   ],
+   [
+    -0.0958,
+    -0.0311
+   ],
+   [
+    -0.0958,
+    -0.0421
+   ],
+   [
+    -0.0828,
+    -0.0491
+   ],
+   [
+    -0.0758,
+    -0.0621
+   ],
+   [
+    -0.0728,
+    -0.0641
+   ],
+   [
+    -0.0638,
+    -0.0641
+   ],
+   [
+    -0.0578,
+    -0.0691
+   ],
+   [
+    -0.0488,
+    -0.0671
+   ],
+   [
+    -0.0458,
+    -0.0691
+   ],
+   [
+    -0.0418,
+    -0.0691
+   ],
+   [
+    -0.0378,
+    -0.0671
+   ],
+   [
+    -0.0338,
+    -0.0691
+   ],
+   [
+    -0.0328,
+    -0.0891
+   ]
+  ]
+ },
+ "height": 0.192,
+ "height_class": "h36",
+ "drive": "differential",
+ "limits": {
+  "v_max": 0.22,
+  "v_min": -0.22,
+  "vy_max": 0.0,
+  "w_max": 2.84
+ },
+ "lidar": {
+  "model": "ROBOTIS LDS-02",
+  "range_min": 0.16,
+  "range_max": 8.0,
+  "fov": 6.2832,
+  "beams": 360
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://github.com/ROBOTIS-GIT/turtlebot3/blob/humble/turtlebot3_description/urdf/turtlebot3_burger.urdf",
+   "method": "every visual geometry of the URDF (joints = 0) projected onto the floor of frame 'base_footprint' at 1 mm, outer outline, simplified to 1 mm (hm3d robots import-urdf)"
+  },
+  "height": {
+   "kind": "official",
+   "url": "https://emanual.robotis.com/docs/en/platform/turtlebot3/features/"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://emanual.robotis.com/docs/en/platform/turtlebot3/features/"
+  },
+  "limits.v_min": {
+   "kind": "estimated",
+   "method": "The manufacturer only publishes the maximum speed; the maximum reverse speed is assumed equal to it."
+  },
+  "limits.vy_max": {
+   "kind": "official",
+   "url": "https://emanual.robotis.com/docs/en/platform/turtlebot3/features/",
+   "note": "differential drive"
+  },
+  "limits.w_max": {
+   "kind": "official",
+   "url": "https://emanual.robotis.com/docs/en/platform/turtlebot3/features/"
+  },
+  "lidar": {
+   "kind": "official",
+   "url": "https://emanual.robotis.com/docs/en/platform/turtlebot3/appendix_lds_02/"
+  },
+  "lidar.beams": {
+   "kind": "estimated",
+   "method": "1 beam per degree, close to the ~1 degree angular resolution of low-cost 2D LiDARs; the environment resamples to n_beams beams."
+  },
+  "footprint_simple": {
+   "kind": "official",
+   "url": "https://emanual.robotis.com/docs/en/platform/turtlebot3/features/"
+  }
+ },
+ "footprint_simple": {
+  "type": "rectangle",
+  "length": 0.138,
+  "width": 0.178
+ }
+}

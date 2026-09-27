@@ -1,0 +1,361 @@
+{
+ "schema_version": "1.0",
+ "id": "pal_tiago",
+ "name": "PAL Robotics TIAGo (differential base)",
+ "footprint": {
+  "type": "polygon",
+  "points": [
+   [
+    -0.211,
+    -0.167
+   ],
+   [
+    -0.208,
+    -0.172
+   ],
+   [
+    -0.184,
+    -0.197
+   ],
+   [
+    -0.163,
+    -0.215
+   ],
+   [
+    -0.139,
+    -0.231
+   ],
+   [
+    -0.11,
+    -0.246
+   ],
+   [
+    -0.074,
+    -0.259
+   ],
+   [
+    -0.047,
+    -0.265
+   ],
+   [
+    -0.019,
+    -0.269
+   ],
+   [
+    0.03,
+    -0.268
+   ],
+   [
+    0.082,
+    -0.257
+   ],
+   [
+    0.099,
+    -0.251
+   ],
+   [
+    0.136,
+    -0.233
+   ],
+   [
+    0.164,
+    -0.214
+   ],
+   [
+    0.194,
+    -0.188
+   ],
+   [
+    0.22,
+    -0.187
+   ],
+   [
+    0.252,
+    -0.18
+   ],
+   [
+    0.258,
+    -0.174
+   ],
+   [
+    0.262,
+    -0.15
+   ],
+   [
+    0.262,
+    -0.119
+   ],
+   [
+    0.256,
+    -0.083
+   ],
+   [
+    0.265,
+    -0.051
+   ],
+   [
+    0.265,
+    -0.047
+   ],
+   [
+    0.261,
+    -0.045
+   ],
+   [
+    0.263,
+    -0.029
+   ],
+   [
+    0.267,
+    -0.027
+   ],
+   [
+    0.268,
+    -0.02
+   ],
+   [
+    0.268,
+    0.02
+   ],
+   [
+    0.267,
+    0.027
+   ],
+   [
+    0.263,
+    0.029
+   ],
+   [
+    0.261,
+    0.045
+   ],
+   [
+    0.265,
+    0.047
+   ],
+   [
+    0.265,
+    0.051
+   ],
+   [
+    0.261,
+    0.069
+   ],
+   [
+    0.257,
+    0.126
+   ],
+   [
+    0.25,
+    0.18
+   ],
+   [
+    0.247,
+    0.192
+   ],
+   [
+    0.238,
+    0.208
+   ],
+   [
+    0.229,
+    0.217
+   ],
+   [
+    0.219,
+    0.222
+   ],
+   [
+    0.211,
+    0.221
+   ],
+   [
+    0.204,
+    0.226
+   ],
+   [
+    0.149,
+    0.224
+   ],
+   [
+    0.136,
+    0.233
+   ],
+   [
+    0.091,
+    0.254
+   ],
+   [
+    0.049,
+    0.265
+   ],
+   [
+    0.02,
+    0.269
+   ],
+   [
+    -0.019,
+    0.269
+   ],
+   [
+    -0.047,
+    0.265
+   ],
+   [
+    -0.074,
+    0.259
+   ],
+   [
+    -0.11,
+    0.246
+   ],
+   [
+    -0.139,
+    0.231
+   ],
+   [
+    -0.163,
+    0.215
+   ],
+   [
+    -0.184,
+    0.197
+   ],
+   [
+    -0.208,
+    0.172
+   ],
+   [
+    -0.211,
+    0.167
+   ],
+   [
+    -0.224,
+    0.155
+   ],
+   [
+    -0.226,
+    0.151
+   ],
+   [
+    -0.226,
+    0.145
+   ],
+   [
+    -0.235,
+    0.132
+   ],
+   [
+    -0.252,
+    0.095
+   ],
+   [
+    -0.264,
+    0.054
+   ],
+   [
+    -0.269,
+    0.017
+   ],
+   [
+    -0.269,
+    -0.018
+   ],
+   [
+    -0.264,
+    -0.054
+   ],
+   [
+    -0.256,
+    -0.084
+   ],
+   [
+    -0.25,
+    -0.1
+   ],
+   [
+    -0.235,
+    -0.132
+   ],
+   [
+    -0.226,
+    -0.145
+   ],
+   [
+    -0.226,
+    -0.151
+   ],
+   [
+    -0.222,
+    -0.158
+   ]
+  ]
+ },
+ "height": 1.45,
+ "height_class": "h145",
+ "drive": "differential",
+ "limits": {
+  "v_max": 1.0,
+  "v_min": -1.0,
+  "vy_max": 0.0,
+  "w_max": 1.0
+ },
+ "lidar": {
+  "model": "SICK TIM561",
+  "range_min": 0.05,
+  "range_max": 10.0,
+  "fov": 4.7124,
+  "beams": 360
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://github.com/pal-robotics/tiago_robot/blob/humble-devel/tiago_description/robots/tiago.urdf.xacro",
+   "method": "every visual geometry of the URDF (joints = 0, arm folded) projected onto the floor of frame 'base_footprint' at 1 mm, outer outline, simplified to 1 mm (hm3d robots import-urdf)"
+  },
+  "height": {
+   "kind": "official",
+   "url": "https://docs.pal-robotics.com/25.01/hardware/tiago/hardware-overview.html",
+   "note": "110-145 cm; the highest setting is used (torso raised)"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://docs.pal-robotics.com/edge/hardware/tiago/mobile-base"
+  },
+  "limits.v_min": {
+   "kind": "estimated",
+   "method": "The manufacturer only publishes the maximum speed; the maximum reverse speed is assumed equal to it."
+  },
+  "limits.vy_max": {
+   "kind": "official",
+   "url": "https://docs.pal-robotics.com/edge/hardware/tiago/mobile-base",
+   "note": "differential drive"
+  },
+  "limits.w_max": {
+   "kind": "estimated",
+   "method": "The manufacturer does not publish the maximum angular velocity; a conservative 1.0 rad/s is used, in line with TurtleBot3 Waffle Pi (1.82) and TurtleBot 4 (1.90). The kinematic bound 2*v_max/track width is not used because it far exceeds the practical safe limit."
+  },
+  "lidar": {
+   "kind": "official",
+   "url": "https://docs.pal-robotics.com/edge/hardware/tiago/mobile-base",
+   "note": "one of three laser options; the TiM561 (0.05-10 m) is used"
+  },
+  "lidar.fov": {
+   "kind": "estimated",
+   "method": "The SICK TiM5xx series scans 270 degrees; not yet checked against the datasheet."
+  },
+  "lidar.beams": {
+   "kind": "estimated",
+   "method": "1 beam per degree, close to the ~1 degree angular resolution of low-cost 2D LiDARs; the environment resamples to n_beams beams."
+  },
+  "footprint_simple": {
+   "kind": "official",
+   "url": "https://docs.pal-robotics.com/edge/hardware/tiago/mobile-base",
+   "note": "Base footprint 54 cm"
+  }
+ },
+ "footprint_simple": {
+  "type": "circle",
+  "radius": 0.27
+ }
+}

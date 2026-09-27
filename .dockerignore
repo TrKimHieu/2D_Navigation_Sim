@@ -1,0 +1,15 @@
+# Only the package and the tests go into the image build context.
+.git
+.github
+workspace
+_legacy
+**/__pycache__
+**/*.py[cod]
+**/*.egg-info
+**/*.nbi
+**/*.nbc
+.pytest_cache
+.venv
+venv
+*.md
+!README.md
