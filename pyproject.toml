@@ -36,6 +36,8 @@ dependencies = [
 fast = ["numba>=0.59"]                                    # compiled collision / LiDAR kernels
 build = ["trimesh>=4", "pillow>=10", "xacro>=2", "pycollada>=0.8", "shapely>=2"]
 hub = ["huggingface_hub>=0.23"]                         # hm3d download (pre-built datasets)
+sim = ["pyzmq>=25"]                                      # hm3d sim --serve (ZeroMQ server)
+train = ["stable-baselines3>=2.4"]                      # examples/train_ppo.py (install CPU torch first: train.sh)
 test = ["pytest>=7"]
 
 [project.urls]
@@ -51,7 +53,7 @@ where = ["src"]
 [tool.setuptools.package-data]
 "hm3denv.robots" = ["presets/*.json"]
 "hm3denv.build.review" = ["*.html"]
-"hm3denv" = ["configs/*.yaml", "demo/**/*"]   # demo datasets (~400 kB)
+"hm3denv" = ["configs/*.yaml", "configs/sim/*.yaml", "demo/**/*"]   # demo datasets (~400 kB)
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -45,7 +45,7 @@ from ..core.kinematics import integrate, wrap
 from ..core.planning import TURN_SMOOTH, Planner, simplify, turning
 from ..core.svgmap import SvgMap, rings_to_d
 from ..robots import Robot, load as load_robot
-from .base import EpisodeSource, spl
+from .base import EpisodeSource, as_point, custom_endpoints, spl
 
 SUB_DIST = 0.02                 # max sub-step translation (m)
 SUB_ANGLE = math.radians(2.0)   # max sub-step rotation (rad)
@@ -226,35 +226,61 @@ class SvgEnv(EpisodeSource, gym.Env):
     def _goal_field(self):
         """Geodesic distance field to the current goal (LRU per map). The first time a
         task is seen, one Dijkstra run gives both the field and the path used for the
-        turning estimate of the time limit."""
-        ctx, i = self.ctx, self._cur
+        turning estimate of the time limit. Dataset tasks are keyed by their index,
+        custom episodes by their goal (field) and start + goal (turning)."""
+        ctx, i, ti = self.ctx, self._fkey, self._tkey
         f = ctx.goal_fields.get(i)
-        if f is not None:
+        need_turn = not self.robot.omni and ti not in ctx.turns
+        if f is not None and not need_turn:
             ctx.goal_fields.move_to_end(i)
             return f
         g = self.task["goal"]
-        need_turn = not self.robot.omni and i not in ctx.turns
-        if ctx.fields_path is not None and not need_turn:
+        if f is None and ctx.fields_path is not None and not need_turn and isinstance(i, int):
             from ..cache import DatasetCache
             f = DatasetCache.load_field(ctx.fields_path, self.planner, i)
-        if f is None and need_turn:
+        if need_turn:
             f, pred = self.planner.field(g["x"], g["y"], predecessors=True)
-            ctx.turns[i] = task_turn(self.planner, self.task, pred)
+            ctx.turns[ti] = task_turn(self.planner, self.task, pred)
         elif f is None:
             f = self.planner.field(g["x"], g["y"])
         ctx.goal_fields[i] = f
+        ctx.goal_fields.move_to_end(i)
         while len(ctx.goal_fields) > ctx.field_cache:
             ctx.goal_fields.popitem(last=False)
         return f
+
+    def _custom_task(self, start, goal) -> dict:
+        """A task dict for your own start / goal on the current map, after checking that
+        the robot fits at the start and can reach the goal."""
+        sx, sy, *th = as_point(start, ("x", "y", "theta"), 2)
+        gx, gy = as_point(goal, ("x", "y"), 2)
+        th = th[0] if th else math.atan2(gy - sy, gx - sx)        # default: face the goal
+        name = f"{self.robot.id} on {self.map_id}"
+        if not self.collider.pose_valid(self.robot.footprint, sx, sy, th):
+            raise ValueError(f"start ({sx:g}, {sy:g}, {th:.3f}) collides with the map ({name})")
+        pl = self.planner
+        if not pl.in_cdisk(gx, gy):
+            raise ValueError(f"goal ({gx:g}, {gy:g}) is too close to a wall or outside the free "
+                             f"area for {name} (needs {pl.r_circ + pl.clearance:.2f} m of clearance)")
+        task = {"id": -1, "start": {"x": sx, "y": sy, "theta": th}, "goal": {"x": gx, "y": gy},
+                "euclidean_m": math.hypot(gx - sx, gy - sy), "labels": {}}
+        self.task, self._fkey, self._tkey = task, ("goal", gx, gy), ("task", sx, sy, th, gx, gy)
+        f = self._goal_field()
+        r, c = pl.nearest_cell(sx, sy)
+        if not np.isfinite(f[r, c]):
+            raise ValueError(f"goal ({gx:g}, {gy:g}) cannot be reached from the start ({sx:g}, {sy:g}) "
+                             f"by {name}: another room, or a passage too narrow for the robot")
+        task["geodesic_m"] = pl.lookup(f, sx, sy)
+        return task
 
     def _default_time_limit(self):
         """time_factor x estimated minimum time: drive the geodesic at v_max and turn
         through every corner of the (5 cm smoothed) path at w_max. Omni robots need no turning."""
         turn = 0.0
         if not self.robot.omni:
-            if self._cur not in self.ctx.turns:
+            if self._tkey not in self.ctx.turns:
                 self._goal_field()
-            turn = self.ctx.turns[self._cur]
+            turn = self.ctx.turns[self._tkey]
         return self.time_factor * (self.geodesic / self.robot.v_max + turn / self.robot.w_max)
 
     def _geo(self, x, y):
@@ -283,7 +309,13 @@ class SvgEnv(EpisodeSource, gym.Env):
             # independent stream derived from the episode-selection seed
             self._noise_rng = np.random.default_rng(self.np_random.bit_generator.seed_seq.spawn(1)[0])
         self.map_id, self.ctx, self._cur = self._choose(options)
-        self.task = self.tasks[self._cur]
+        custom = custom_endpoints(options)
+        if custom:
+            self._cur = -1
+            self.task = self._custom_task(*custom)
+        else:
+            self.task = self.tasks[self._cur]
+            self._fkey = self._tkey = self._cur
         self.success_radius = self._success_radius or self.ctx.header.get("success_radius", 0.2)
         s = self.task["start"]
         self.pose = (s["x"], s["y"], s["theta"])

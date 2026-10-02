@@ -101,54 +101,76 @@ def sample_map(svgmap, robot, k, rng, min_geo, max_geo, min_gdr, clearance, chec
     return tasks, checks, pl
 
 
+def checker(ws, meta: dict, robot: Robot):
+    """check(poly, which) on the 3D mesh of the map's storey (verify.check_footprint)."""
+    probe = storey_probe(ws, meta["scene"], meta["frame"]["up"], meta["floor_z"])
+
+    def check(poly, which, probe=probe, fz=meta["floor_z"]):
+        return check_footprint(probe, poly, fz, robot.height)
+    return check
+
+
+def check_rows(robot_id, map_id, checks) -> list[dict]:
+    """verify/<robot>.csv rows of the 3D checks of one map."""
+    return [{"robot": robot_id, "map_id": map_id, "task": "", "which": which,
+             "x": round(x, 4), "y": round(y, 4), "theta": "" if th is None else round(th, 4),
+             **{k: c[k] for k in ("support", "clear_hits", "roof", "ok")}}
+            for which, x, y, th, c in checks]
+
+
+def task_header(p: SvgTaskParams, robot: Robot, plan_res: float) -> dict:
+    """Header fields of an SVG task file (besides dataset, map, robot, split, tasks)."""
+    return {"height_class": robot.height_class, "success_radius": p.success_radius,
+            "clearance": p.clearance,
+            "planning": {"plan_res": plan_res, "neighbourhood": 16,
+                         "max_anisotropy_error": MAX_ANISO_ERR,
+                         "note": "geodesic on C_disk (circumradius + clearance)"}}
+
+
+def map_tasks(ws, root: Path, dataset: str, robot: Robot, splits: dict, p: SvgTaskParams,
+              svg_path: Path) -> tuple[dict, list]:
+    """Sample and write the tasks of one map (tasks/<robot>/<map_id>.json; removed when
+    no task fits). Returns (per-map stats, verify rows)."""
+    m = SvgMap.load(svg_path)
+    map_id, meta = svg_path.stem, m.meta
+    rng = np.random.default_rng([p.seed, zlib.crc32(f"{robot.id}/{map_id}".encode())])
+    check = checker(ws, meta, robot) if p.verify else None
+    tasks, checks, pl = sample_map(m, robot, p.k, rng, p.min_geo, p.max_geo, p.min_gdr,
+                                   p.clearance, check)
+    rows = check_rows(robot.id, map_id, checks)
+    fail = (sum(not c[-1]["ok"] for c in checks) / len(checks)) if checks else 0.0
+    flags = list(meta.get("flags", []))
+    if fail > p.flag_fail:
+        flags.append(f"verify_fail {fail:.0%}")
+    if len(tasks) < p.k:
+        flags.append(f"only {len(tasks)}/{p.k} tasks")
+    stats = {"tasks": len(tasks), "checked": len(checks), "verify_fail": round(fail, 3),
+             "flags": flags, "cdisk_m2": round(len(pl.cells) * pl.res ** 2, 2)}
+    out = Path(root) / "tasks" / robot.id / f"{map_id}.json"
+    if not tasks:
+        out.unlink(missing_ok=True)
+        log.info("  %s: 0 tasks  FLAG %s", map_id, flags)
+        return stats, rows
+    task_file(root, dataset=dataset, env="svg", map_id=map_id, robot=robot.id, splits=splits,
+              **task_header(p, robot, pl.res), tasks=tasks)
+    geo = [t["geodesic_m"] for t in tasks]
+    log.info("  %s: %d tasks, geodesic %.1f-%.1f m, %d checks, %.0f%% failed%s", map_id, len(tasks),
+             min(geo), max(geo), len(checks), fail * 100, f"  FLAG {flags}" if flags else "")
+    return stats, rows
+
+
 def run(ws, root: Path, dataset: str, robot: Robot, splits: dict,
         params: SvgTaskParams | None = None) -> dict:
     """Sample tasks for `robot` on every map of its height class (maps/<hc>/*.svg).
     Writes tasks/<robot>/<map_id>.json and verify/<robot>.csv; returns per-map stats."""
     p = params or SvgTaskParams()
     root = Path(root)
-    hc = robot.height_class
     tdir = root / "tasks" / robot.id
     tdir.mkdir(parents=True, exist_ok=True)
     rows, per_map = [], {}
-    for sp in sorted((root / "maps" / hc).glob("*.svg")):
-        m = SvgMap.load(sp)
-        map_id, meta = sp.stem, m.meta
-        rng = np.random.default_rng([p.seed, zlib.crc32(f"{robot.id}/{map_id}".encode())])
-        check = None
-        if p.verify:
-            probe = storey_probe(ws, meta["scene"], meta["frame"]["up"], meta["floor_z"])
-
-            def check(poly, which, probe=probe, fz=meta["floor_z"]):
-                return check_footprint(probe, poly, fz, robot.height)
-        tasks, checks, pl = sample_map(m, robot, p.k, rng, p.min_geo, p.max_geo, p.min_gdr,
-                                       p.clearance, check)
-        for which, x, y, th, c in checks:
-            rows.append({"robot": robot.id, "map_id": map_id, "task": "", "which": which,
-                         "x": round(x, 4), "y": round(y, 4), "theta": "" if th is None else round(th, 4),
-                         **{k: c[k] for k in ("support", "clear_hits", "roof", "ok")}})
-        fail = (sum(not c[-1]["ok"] for c in checks) / len(checks)) if checks else 0.0
-        flags = list(meta.get("flags", []))
-        if fail > p.flag_fail:
-            flags.append(f"verify_fail {fail:.0%}")
-        if len(tasks) < p.k:
-            flags.append(f"only {len(tasks)}/{p.k} tasks")
-        per_map[map_id] = {"tasks": len(tasks), "checked": len(checks), "verify_fail": round(fail, 3),
-                           "flags": flags, "cdisk_m2": round(len(pl.cells) * pl.res ** 2, 2)}
-        out = tdir / f"{map_id}.json"
-        if not tasks:
-            out.unlink(missing_ok=True)
-            log.info("  %s: 0 tasks  FLAG %s", map_id, flags)
-            continue
-        task_file(root, dataset=dataset, env="svg", map_id=map_id, robot=robot.id, splits=splits,
-                  height_class=hc, success_radius=p.success_radius, clearance=p.clearance,
-                  planning={"plan_res": pl.res, "neighbourhood": 16,
-                            "max_anisotropy_error": MAX_ANISO_ERR,
-                            "note": "geodesic on C_disk (circumradius + clearance)"},
-                  tasks=tasks)
-        geo = [t["geodesic_m"] for t in tasks]
-        log.info("  %s: %d tasks, geodesic %.1f-%.1f m, %d checks, %.0f%% failed%s", map_id, len(tasks),
-                 min(geo), max(geo), len(checks), fail * 100, f"  FLAG {flags}" if flags else "")
+    for sp in sorted((root / "maps" / robot.height_class).glob("*.svg")):
+        per_map[sp.stem], r = map_tasks(ws, root, dataset, robot, splits, p, sp)
+        rows += r
     for old in tdir.glob("*.json"):
         if not per_map.get(old.stem, {}).get("tasks"):
             old.unlink()

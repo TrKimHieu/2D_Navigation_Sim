@@ -1,5 +1,5 @@
-# Tests of hm3denv on Linux and Windows, with and without the numba kernels,
-# plus the Docker test stage (Linux image).
+# Tests of hm3denv on Linux and Windows, with and without the numba kernels, the README's
+# feature commands on a fresh clone, plus the Docker test stage (Linux image).
 name: hm3denv
 
 on:
@@ -28,8 +28,8 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          if [ "${{ matrix.backend }}" = "numba" ]; then pip install -e ".[build,test,fast]"; \
-          else pip install -e ".[build,test]"; fi
+          if [ "${{ matrix.backend }}" = "numba" ]; then pip install -e ".[build,test,sim,fast]"; \
+          else pip install -e ".[build,test,sim]"; fi
       - name: Test (no workspace data)
         run: python -m pytest -q -m "not workspace"
 
@@ -39,3 +39,47 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build the image and run the test stage
         run: docker build --target test -t hm3denv:test .
+
+  # The README's feature commands on a fresh clone: each launcher installs what it needs.
+  scripts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Feature commands (Linux)
+        if: runner.os != 'Windows'
+        run: |
+          ./setup.sh
+          ./get-data.sh --help
+          ./sim.sh demo --episodes 2
+          ./sim.sh --dataset demo-grid --map demo-S001_s0 --start 43,51 --goal 29,51
+          .venv/bin/python examples/quickstart.py --episodes 1
+          ./train.sh --help
+          ./train.sh --config custom_pairs --steps 2048 --n-envs 2 --eval-episodes 1 --out runs/ci
+          ./setup.sh --build --quiet
+          .venv/bin/python tests/room_glb.py room.glb
+          ./build-map.sh room.glb --robots turtlebot4 --up z --no-preview
+          ./extend-data.sh my-maps --status
+          ./sim.sh --dataset my-maps --episodes 1
+      - name: Feature commands (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call .\setup.bat || exit /b 1
+          call .\get-data.bat --help || exit /b 1
+          call .\sim.bat demo --episodes 2 || exit /b 1
+          call .\sim.bat --dataset demo-grid --map demo-S001_s0 --start 43,51 --goal 29,51 || exit /b 1
+          .venv\Scripts\python.exe examples\quickstart.py --episodes 1 || exit /b 1
+          call .\train.bat --help || exit /b 1
+          call .\train.bat --config custom_pairs --steps 2048 --n-envs 2 --eval-episodes 1 --out runs\ci || exit /b 1
+          call .\setup.bat --build --quiet || exit /b 1
+          .venv\Scripts\python.exe tests\room_glb.py room.glb || exit /b 1
+          call .\build-map.bat room.glb --robots turtlebot4 --up z --no-preview || exit /b 1
+          call .\extend-data.bat my-maps --status || exit /b 1
+          call .\sim.bat --dataset my-maps --episodes 1 || exit /b 1

@@ -19,14 +19,17 @@ def require_build_extra():
 
 @pytest.fixture(autouse=True, scope="session")
 def _isolated_disk_cache(tmp_path_factory):
-    """Never touch the user's map cache (see hm3denv.cache)."""
-    old = os.environ.get("HM3D_CACHE")
+    """Never touch the user's map cache (see hm3denv.cache) nor the data home of the
+    checkout (<repo>/data: its datasets, robot presets and workspace)."""
+    old = {k: os.environ.get(k) for k in ("HM3D_CACHE", "HM3D_HOME")}
     os.environ["HM3D_CACHE"] = str(tmp_path_factory.mktemp("hm3d-cache"))
+    os.environ["HM3D_HOME"] = str(tmp_path_factory.mktemp("hm3d-home"))
     yield
-    if old is None:
-        os.environ.pop("HM3D_CACHE", None)
-    else:
-        os.environ["HM3D_CACHE"] = old
+    for k, v in old.items():
+        if v is None:
+            os.environ.pop(k, None)
+        else:
+            os.environ[k] = v
 
 
 # 3 "scenes" x 1 storey: 6 x 3 m rooms, the second with a U wall

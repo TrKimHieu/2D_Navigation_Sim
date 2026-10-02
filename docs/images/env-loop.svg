@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 330" width="820" height="330" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <title>The agent-environment loop: observation to policy, action back to the environment</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6474"/>
+    </marker>
+    <style>
+      .ttl { fill: #1f2937; font-size: 18px; font-weight: 700; text-anchor: middle; }
+      .sub { fill: #5b6474; font-size: 13px; text-anchor: middle; }
+      .lbl { fill: #1f2937; font-size: 14px; font-weight: 700; }
+      .txt { fill: #374151; font-size: 13px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="820" height="330" rx="14" fill="#f6f8fb"/>
+
+  <!-- environment -->
+  <rect x="24" y="60" width="250" height="200" rx="12" fill="#ffffff" stroke="#d0d7e2" stroke-width="1.5"/>
+  <text class="ttl" x="149" y="40">Environment</text>
+  <text class="sub mono" x="149" y="284">HM3D/Svg-v0 · HM3D/Grid-v0</text>
+  <!-- mini map -->
+  <rect x="44" y="78" width="210" height="164" rx="4" fill="#fafaf7" stroke="#343a46" stroke-width="6"/>
+  <rect x="150" y="78" width="10" height="80" fill="#343a46"/>
+  <rect x="80" y="180" width="40" height="28" fill="#343a46"/>
+  <rect x="190" y="190" width="30" height="40" fill="#343a46"/>
+  <g stroke="#ffaa3c" stroke-width="1.2" opacity="0.85">
+    <line x1="96" y1="128" x2="150" y2="104"/><line x1="96" y1="128" x2="150" y2="128"/>
+    <line x1="96" y1="128" x2="150" y2="150"/><line x1="96" y1="128" x2="120" y2="180"/>
+    <line x1="96" y1="128" x2="96" y2="180"/><line x1="96" y1="128" x2="49" y2="170"/>
+    <line x1="96" y1="128" x2="49" y2="128"/><line x1="96" y1="128" x2="49" y2="90"/>
+    <line x1="96" y1="128" x2="96" y2="83"/><line x1="96" y1="128" x2="140" y2="83"/>
+  </g>
+  <path d="M96,128 C120,150 130,170 160,172 S215,150 228,120" fill="none" stroke="#3c78d8" stroke-width="2.5" stroke-dasharray="5 4"/>
+  <circle cx="228" cy="112" r="8" fill="#d62828"/>
+  <rect x="88" y="120" width="16" height="16" rx="4" fill="#28964a"/>
+  <line x1="96" y1="128" x2="108" y2="128" stroke="#ffffff" stroke-width="2"/>
+
+  <!-- policy -->
+  <rect x="546" y="60" width="250" height="200" rx="12" fill="#ffffff" stroke="#d0d7e2" stroke-width="1.5"/>
+  <text class="ttl" x="671" y="40">Your policy</text>
+  <text class="sub" x="671" y="284">PPO (./train.sh) or your own model</text>
+  <g fill="#3c78d8">
+    <circle cx="610" cy="115" r="9"/><circle cx="610" cy="160" r="9"/><circle cx="610" cy="205" r="9"/>
+    <circle cx="671" cy="100" r="9"/><circle cx="671" cy="140" r="9"/><circle cx="671" cy="180" r="9"/><circle cx="671" cy="220" r="9"/>
+    <circle cx="732" cy="137" r="9" fill="#2a9d55"/><circle cx="732" cy="183" r="9" fill="#2a9d55"/>
+  </g>
+  <g stroke="#b9c4d6" stroke-width="1">
+    <line x1="619" y1="115" x2="662" y2="100"/><line x1="619" y1="115" x2="662" y2="140"/><line x1="619" y1="115" x2="662" y2="180"/><line x1="619" y1="115" x2="662" y2="220"/>
+    <line x1="619" y1="160" x2="662" y2="100"/><line x1="619" y1="160" x2="662" y2="140"/><line x1="619" y1="160" x2="662" y2="180"/><line x1="619" y1="160" x2="662" y2="220"/>
+    <line x1="619" y1="205" x2="662" y2="100"/><line x1="619" y1="205" x2="662" y2="140"/><line x1="619" y1="205" x2="662" y2="180"/><line x1="619" y1="205" x2="662" y2="220"/>
+    <line x1="680" y1="100" x2="723" y2="137"/><line x1="680" y1="140" x2="723" y2="137"/><line x1="680" y1="180" x2="723" y2="137"/><line x1="680" y1="220" x2="723" y2="137"/>
+    <line x1="680" y1="100" x2="723" y2="183"/><line x1="680" y1="140" x2="723" y2="183"/><line x1="680" y1="180" x2="723" y2="183"/><line x1="680" y1="220" x2="723" y2="183"/>
+  </g>
+  <text class="txt mono" x="744" y="142">v</text>
+  <text class="txt mono" x="744" y="188">ω</text>
+
+  <!-- observation arrow -->
+  <path d="M276,104 L544,104" stroke="#5b6474" stroke-width="2.5" fill="none" marker-end="url(#a)"/>
+  <text class="lbl" x="296" y="80">observation</text>
+  <text class="txt" x="296" y="128">LiDAR ranges (robot's real sensor)</text>
+  <text class="txt" x="296" y="146">goal: distance + direction</text>
+  <text class="txt" x="296" y="164">current velocity</text>
+  <text class="txt" x="296" y="182">(grid: LiDAR in cells only, no goal)</text>
+
+  <!-- action arrow -->
+  <path d="M544,232 L276,232" stroke="#5b6474" stroke-width="2.5" fill="none" marker-end="url(#a)"/>
+  <text class="lbl" x="296" y="220">action</text>
+  <text class="txt" x="296" y="250">speed v, turn rate ω</text>
+  <text class="txt" x="296" y="268">(grid: up / down / left / right)</text>
+
+  <!-- reward -->
+  <text class="txt" x="24" y="314"><tspan class="lbl">reward + info</tspan>  every step: progress to goal, collisions, wall distance — at the end: success, SPL</text>
+</svg>

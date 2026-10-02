@@ -16,23 +16,11 @@ from hm3denv.build.pipeline import ConfigError, load_config
 from hm3denv.cli import main
 from hm3denv.dataset import Dataset
 from hm3denv.evaluate import evaluate
+from room_glb import room  # noqa: F401  (also imported by other test modules)
 
 trimesh = pytest.importorskip("trimesh")
 
 SCENES = ["00001-aaa", "00002-bbb", "00003-ccc"]
-
-
-def room(obstacle_x):
-    """6 x 4 m room (Z up): floor z=0, ceiling z=2.5, four walls, one 0.8 m box."""
-    parts = []
-    for ext, c in (([6, 4, 0.1], [3, 2, -0.05]), ([6, 4, 0.1], [3, 2, 2.55]),
-                   ([0.1, 4, 2.5], [-0.05, 2, 1.25]), ([0.1, 4, 2.5], [6.05, 2, 1.25]),
-                   ([6, 0.1, 2.5], [3, -0.05, 1.25]), ([6, 0.1, 2.5], [3, 4.05, 1.25]),
-                   ([0.8, 0.8, 0.8], [obstacle_x, 2, 0.4])):
-        b = trimesh.creation.box(extents=ext)
-        b.apply_translation(c)
-        parts.append(b)
-    return trimesh.util.concatenate(parts)
 
 
 @pytest.fixture(scope="session")
@@ -166,7 +154,9 @@ def test_cli_without_workspace_fails_cleanly(monkeypatch, tmp_path, capsys):
 
 # ------------------------------------------------------------------ real workspace
 
-REAL_WS = Path(os.environ.get("HM3D_WORKSPACE", Path(__file__).resolve().parents[1] / "workspace"))
+_REPO = Path(__file__).resolve().parents[1]
+REAL_WS = Path(os.environ.get("HM3D_WORKSPACE") or next(
+    (d for d in (_REPO / "data", _REPO / "workspace") if (d / "workspace.yaml").exists()), _REPO / "data"))
 
 
 @pytest.mark.workspace

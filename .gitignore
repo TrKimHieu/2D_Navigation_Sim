@@ -1,6 +1,9 @@
 # ---------------------------------------------------------------- data (never committed)
 # Workspace: HM3D GLB files, caches, intermediate stages and built datasets.
 # HM3D is under the Matterport license: publish datasets built from it separately.
+# data/ is the data home of a checkout: workspace + downloaded and built datasets.
+/data/*
+!/data/README.md
 workspace/
 /datasets/
 *.glb
@@ -69,3 +72,6 @@ desktop.ini
 .claude/
 *.tmp
 *.log
+
+# training runs (examples/train_ppo.py)
+runs/

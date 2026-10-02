@@ -1,20 +1,31 @@
-"""``hm3d`` command line.
+"""``hm3d`` command line. The feature commands of the repository (get-data, sim, train,
+build-map, extend-data: .bat on Windows, .sh on Linux/macOS) run these for you.
 
-Using datasets (no workspace needed):
+Features:
+    hm3d download [NAME ...] [--dir D]    pre-built datasets from Hugging Face (no name: list)
+    hm3d sim [CONFIG] [--dataset D --robot R --map M --task I --start X,Y --goal X,Y --num-envs N]
+             [--view [PORT]] [--serve [ADDRESS]] [--agent A]
+                                          open a simulation: watch it, or drive it over ZeroMQ
+    hm3d build-map GLB|DIR ... [--name N] [--env svg|grid] [--robots R ...]
+                                          GLB scenes -> a dataset (adds to it if it exists)
+    hm3d extend NAME [--status] [--new-scenes | --scenes S ...] [--add-tasks K] [--robots R ...]
+                                          continue a dataset without changing what is in it
+    hm3d eval NAME [--robot R] [--agent oracle|random|mod:fn] [--split S]
+
+Using datasets:
     hm3d datasets                         list datasets found
     hm3d datasets validate NAME           check files against the manifest
     hm3d info NAME                        robots, splits, counts, flags
-    hm3d download [NAME ...] [--dir D]    pre-built datasets from Hugging Face (no name: list)
     hm3d robots                           list robot presets
     hm3d robots check [ID|FILE ...]       validate presets
-    hm3d eval NAME [--robot R] [--agent oracle|random|mod:fn] [--split S]
     hm3d render NAME --robot R --map M [--task I] [--out F]
     hm3d bench NAME [--robot R] [--num-envs N ...] [--envs-per-worker K] [--seconds S]
     hm3d cache build NAME [--robot R ...] [--split S] [--fields] [--jobs N]
     hm3d cache info | clear [NAME]        map cache on disk ($HM3D_CACHE)
 
-Building datasets (workspace, ``pip install hm3denv[build]``):
-    hm3d init DIR                         create a workspace
+Building datasets step by step (workspace: data/ of the repository, or $HM3D_WORKSPACE;
+``pip install hm3denv[build]``):
+    hm3d init DIR                         create a workspace elsewhere
     hm3d slice [SCENE ...] [--height H | --robot R]
     hm3d review [--port P]
     hm3d build CONFIG [--force STAGE ...] [--out DIR] [--no-preview]
@@ -30,9 +41,12 @@ import json
 import logging
 import os
 import sys
+import time
 from pathlib import Path
 
 from . import __version__, paths
+
+UP_AXES = ("x", "y", "z")
 
 
 def _ws(args, required=True):
@@ -153,7 +167,7 @@ def cmd_eval(args):
     if args.budget:
         kw["budget"] = args.budget
     s = evaluate(load_dataset(args.name, args.search), robot=args.robot, agent=args.agent, split=args.split, per_map=args.per_map,
-                 seed=args.seed, out=args.out, trajectory=args.trajectory, **kw)
+                 seed=args.seed, out=args.out, trajectory=args.trajectory, progress=not args.quiet, **kw)
     print(json.dumps(s, indent=1))
     if args.summary:
         write_summary(s, args.summary)
@@ -235,35 +249,95 @@ def cmd_render(args):
         out = Path(args.out or f"{robot}__{args.map}__task{i}.svg")
         out.write_text(svg, encoding="utf-8")
     else:
-        from PIL import Image
+        import cv2
         img, i, info = PV.episode_png(ds, robot, args.map, args.task)
         out = Path(args.out or f"{robot}__{args.map}__task{i}.png")
-        Image.fromarray(img).save(out)
+        out.write_bytes(cv2.imencode(".png", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))[1].tobytes())
     print(f"task {i}: {info['termination']}, path {info['path_length']:.2f} m, spl {info['spl']:.3f} -> {out}")
+
+
+# ------------------------------------------------------------------ simulating
+
+def sim_config(args) -> dict:
+    """Session config of `hm3d sim` (and examples/train_ppo.py): the YAML file, if any,
+    with the command-line options on top."""
+    from .sim.config import load_sim_config, parse_point
+    grid_like = None
+    eps = None
+    if args.start or args.goal or args.task is not None:
+        m = args.map[0] if args.map else None
+        if args.start or args.goal:
+            if not (args.start and args.goal):
+                raise ValueError("give both --start and --goal")
+            start, goal = parse_point(args.start, 2, 3), parse_point(args.goal, 2, 2)
+            grid_like = start
+            eps = [{"map": m, "start": start, "goal": goal}]
+        else:
+            eps = [{"map": m, "task_idx": args.task}]
+    cfg = load_sim_config(args.config, dataset=args.dataset, robot=args.robot, split=args.split,
+                          num_envs=args.num_envs, seed=args.seed, maps=args.map, episodes=eps,
+                          vectorization=getattr(args, "vectorization", None),
+                          auto_reset=False if getattr(args, "no_auto_reset", False) else None)
+    if grid_like is not None and cfg["episodes"]:
+        from .dataset import load_dataset
+        if load_dataset(cfg["dataset"]).env_type == "grid":     # cells are integers
+            for e in cfg["episodes"]:
+                e["start"], e["goal"] = [int(v) for v in e["start"][:2]], [int(v) for v in e["goal"]]
+    return cfg
+
+
+def cmd_sim(args):
+    from .sim.session import Session
+    cfg = sim_config(args)
+    serve = args.serve is not None
+    if not serve:
+        cfg["vectorization"] = "sync"            # agents act on the environment objects
+    if args.view is not None and args.view is not True:
+        cfg["viewer"]["port"] = int(args.view)
+    if serve and args.serve is not True:
+        cfg["server"]["bind"] = args.serve
+    with Session(cfg) as s:
+        print(f"simulation: {s.dataset.name} ({s.env_id}), robot {s.robot}, {s.num_envs} env(s), "
+              f"{len(s.maps)} map(s)" + (f", {len(cfg['episodes'])} fixed episode(s)" if cfg["episodes"] else ""))
+        viewer = None
+        if args.view is not None:
+            from .sim.viewer import Viewer
+            viewer = Viewer(s, cfg["viewer"]["host"], cfg["viewer"]["port"]).start(not args.no_browser)
+            print(f"viewer: {viewer.url}")
+        try:
+            if serve:
+                from .sim.server import SimServer
+                srv = SimServer(s, cfg["server"]["bind"])
+                print(f"serving on {srv.bind} (ZeroMQ REQ/REP, JSON). From Python:\n"
+                      f"    from hm3denv.sim import SimClient\n"
+                      f"    sim = SimClient(\"{srv.bind.replace('*', '127.0.0.1')}\"); obs, info = sim.reset()\n"
+                      f"Stop with Ctrl+C or a {{\"cmd\": \"close\"}} request.")
+                srv.serve_forever()
+                return
+            from .sim.run import run_agent
+            episodes = args.episodes if args.episodes is not None else (
+                len(cfg["episodes"]) if cfg["episodes"] else 5)
+            fps = args.fps if args.fps is not None else (
+                1.0 / cfg["env"].get("dt", 0.1) if viewer and s.env_id == "HM3D/Svg-v0" else
+                10.0 if viewer else None)
+            summ = run_agent(s, args.agent, episodes, args.steps, fps)
+            print(json.dumps(summ))
+            if viewer and not args.no_wait:
+                print("finished; the viewer stays open - press Ctrl+C to quit")
+                try:
+                    while True:
+                        time.sleep(1)
+                except KeyboardInterrupt:
+                    pass
+        finally:
+            if viewer:
+                viewer.stop()
 
 
 # ------------------------------------------------------------------ building
 
-WORKSPACE_YAML = """# HM3D workspace (hm3denv {version})
-# raw/glb/        HM3D scenes (*.glb)
-# cache/          mesh cache, downloaded robot models
-# stages/slice/   storey maps + review.json
-# robots/         your robot presets (override the packaged ones)
-# datasets/       built datasets
-version: 1
-"""
-
-
 def cmd_init(args):
-    root = Path(args.dir).resolve()
-    for d in ("raw/glb", "cache", "stages/slice", "robots", "datasets", "configs"):
-        (root / d).mkdir(parents=True, exist_ok=True)
-    y = root / paths.MARKER
-    if not y.exists():
-        y.write_text(WORKSPACE_YAML.format(version=__version__), encoding="utf-8")
-    for cfg in (Path(__file__).resolve().parent / "configs").glob("*.yaml"):   # example configs
-        if not (root / "configs" / cfg.name).exists():
-            (root / "configs" / cfg.name).write_text(cfg.read_text(encoding="utf-8"), encoding="utf-8")
+    root = paths.init_workspace(args.dir)
     print(f"workspace ready: {root}\n  copy GLB files into {root / 'raw' / 'glb'}\n"
           f"  then: set HM3D_WORKSPACE={root}  (or run hm3d from inside it)")
 
@@ -293,6 +367,61 @@ def cmd_build(args):
                                      for r, v in ds.manifest["robots"].items()) + f"\n  {root}")
 
 
+def cmd_build_map(args):
+    from .build.importer import build_map
+    from .dataset import Dataset
+    root, scenes = build_map(args.inputs, name=args.name, env=args.env, robots=args.robots,
+                             up=args.up, ws=args.workspace, replace=args.replace,
+                             preview=not args.no_preview, verify=not args.no_verify)
+    ds = Dataset(root)
+    print(f"\n{ds.name} ({ds.env_type}): {len(scenes)} new scene(s) -> {root}")
+    for r, v in sorted(ds.manifest["robots"].items()):
+        print(f"  {r:<22} {v['n_maps']:>4} maps {v['n_tasks']:>6} tasks"
+              + (f"  ({len(v['flagged'])} flagged: hm3d info {ds.name} --flags)" if v["flagged"] else ""))
+    if (root / "preview").exists():
+        print(f"  previews: {root / 'preview'}")
+    robot = "turtlebot4" if "turtlebot4" in ds.robots else ds.robots[0]
+    print(f"\nUse it (Linux/macOS: ./sim.sh, ./train.sh):\n"
+          f"  .\\sim.bat --dataset {ds.name} --robot {robot} --view\n"
+          f"  .\\train.bat --dataset {ds.name} --robot {robot}\n"
+          f"A storey looks wrong (flipped, merged)? Fix it with `hm3d review`, then run build-map again.")
+    if args.review:
+        from .build.review import serve
+        serve(paths.find_workspace(args.workspace) if args.workspace else paths.ensure_workspace())
+
+
+def cmd_extend(args):
+    from .build import extend as E
+    if args.status:
+        st = E.status(args.name, args.workspace, args.source)
+        print(f"{st['name']}  env={st['env']}  source={st['source']}  {st['path']}")
+        print(f"  scenes: {st['scenes']} (" + ", ".join(f"{k} {v}" for k, v in st["splits"].items()) + ")")
+        for r, v in st["robots"].items():
+            print(f"  {r:<22} {v['maps']:>4} maps {v['tasks']:>6} tasks")
+        print(f"  workspace: {st['workspace'] or 'none (build-map or hm3d init creates one)'}")
+        new = st["new_scenes"]
+        print(f"  scenes that can be added: {len(new)}" + (f"  {new[:6]}{' ...' if len(new) > 6 else ''}" if new else ""))
+        if st.get("scenes_without_glb"):
+            print(f"  scenes without a GLB here: {len(st['scenes_without_glb'])} "
+                  "(needed for --add-tasks / --robots unless --no-verify)")
+        if "robots_to_add" in st:
+            print(f"  robots that can be added: {', '.join(st['robots_to_add']) or 'none'}")
+        for h in st["history"]:
+            print(f"  history {h['date']}: +{len(h['added_scenes'])} scenes, +{h['added_maps']} maps, "
+                  f"+{h['added_tasks']} tasks, robots {h['added_robots'] or '-'}")
+        return 0
+    root = E.extend(args.name, ws=args.workspace, out=args.out, in_place=args.in_place,
+                    scenes=args.scenes, new_scenes=args.new_scenes, add_tasks=args.add_tasks,
+                    robots=args.robots, verify=not args.no_verify, source_path=args.source,
+                    from_hf=args.from_hf)
+    from .dataset import Dataset
+    ds = Dataset(root)
+    h = ds.manifest["history"][-1]
+    print(f"{ds.name}: +{len(h['added_scenes'])} scenes, +{h['added_maps']} maps, +{h['added_tasks']} tasks"
+          + (f", robots {h['added_robots']}" if h["added_robots"] else "") + f"\n  {root}\n"
+          f"  use it: .\\sim.bat --dataset {ds.name} --view   |   hm3d eval {ds.name} --agent oracle")
+
+
 def cmd_verify(args):
     from .build import verify as V
     from .dataset import load_dataset
@@ -313,11 +442,26 @@ def cmd_verify(args):
 
 # ------------------------------------------------------------------ parser
 
+def add_sim_args(s):
+    """Options shared by `hm3d sim` and examples/train_ppo.py (they override the config)."""
+    s.add_argument("config", nargs="?", help="session config (YAML), e.g. src/hm3denv/configs/sim_demo.yaml")
+    s.add_argument("--dataset", help="dataset name or path (default: demo-svg)")
+    s.add_argument("--robot", help="robot preset (default: the dataset's only robot, or turtlebot4)")
+    s.add_argument("--split", choices=["train", "val", "test"], help="default: every split")
+    s.add_argument("--map", nargs="+", metavar="MAP_ID", help="only these maps")
+    s.add_argument("--task", type=int, metavar="I", help="always task I of the (first) map")
+    s.add_argument("--start", metavar="X,Y[,THETA]",
+                   help="your own start (metres, radians; grid: ROW,COL) - needs --goal and --map")
+    s.add_argument("--goal", metavar="X,Y", help="your own goal (metres; grid: ROW,COL)")
+    s.add_argument("--num-envs", type=int, metavar="N", help="environments side by side (default: 1)")
+    s.add_argument("--seed", type=int)
+
+
 def parser():
     p = argparse.ArgumentParser(prog="hm3d", description="HM3D navigation environments and dataset tools.",
                                 formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
     p.add_argument("--version", action="version", version=f"hm3denv {__version__}")
-    p.add_argument("--workspace", "-w", help="workspace directory (default: $HM3D_WORKSPACE or cwd)")
+    p.add_argument("--workspace", "-w", help="workspace directory (default: $HM3D_WORKSPACE, the cwd, else data/ of the repository)")
     p.add_argument("--search", help="extra directory to search for datasets")
     p.add_argument("-v", "--verbose", action="store_true")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -329,7 +473,7 @@ def parser():
 
     s = sub.add_parser("download", help="download pre-built datasets from Hugging Face")
     s.add_argument("names", nargs="*", help="dataset names (none: list the available ones)")
-    s.add_argument("--dir", help="target directory (default: $HM3D_HOME/datasets, searched by name)")
+    s.add_argument("--dir", help="target directory (default: data/datasets of the repository, or $HM3D_HOME/datasets)")
     s.add_argument("--token", help="Hugging Face token (default: the one from `hf auth login`)")
     s.add_argument("--force", action="store_true", help="download again even if present")
     s.set_defaults(fn=cmd_download)
@@ -349,12 +493,14 @@ def parser():
     s.set_defaults(fn=cmd_robots)
 
     s = sub.add_parser("eval", help="evaluate an agent")
-    s.add_argument("name")
-    s.add_argument("--robot")
-    s.add_argument("--agent", default="oracle")
-    s.add_argument("--split", choices=["train", "val", "test"])
-    s.add_argument("--per-map", type=int)
-    s.add_argument("--seed", type=int, default=0)
+    s.add_argument("name", help="dataset name or path")
+    s.add_argument("--robot", help="robot preset (default: the dataset's only robot)")
+    s.add_argument("--agent", default="oracle",
+                   help="oracle | random | module:function (function(env) returns policy(obs) -> action)")
+    s.add_argument("--split", choices=["train", "val", "test"], help="default: every split")
+    s.add_argument("--per-map", type=int, help="at most this many tasks per map (default: all)")
+    s.add_argument("--seed", type=int, default=0, help="seed of every episode (default: 0)")
+    s.add_argument("--quiet", "-q", action="store_true", help="no progress lines on stderr")
     s.add_argument("--budget", type=int, help="grid: step budget")
     s.add_argument("--out", help="episodes JSONL")
     s.add_argument("--trajectory", action="store_true", help="store trajectories in the JSONL")
@@ -393,6 +539,30 @@ def parser():
     s.add_argument("--jobs", type=int, help="worker processes (default: min(8, CPUs); each needs ~200 MB)")
     s.set_defaults(fn=cmd_cache)
 
+    s = sub.add_parser("sim", help="open a simulation: run an agent, watch it (--view) or let "
+                                   "another program drive it over ZeroMQ (--serve)",
+                       description="Open a simulation from a session config (see hm3denv.sim.config) "
+                                   "and/or the options below (they override the file).")
+    add_sim_args(s)
+    s.add_argument("--serve", nargs="?", const=True, metavar="ADDRESS",
+                   help="serve the session over ZeroMQ (default tcp://127.0.0.1:5555) instead of "
+                        "running an agent")
+    s.add_argument("--view", nargs="?", const=True, metavar="PORT",
+                   help="watch it in the browser (default port 8770)")
+    s.add_argument("--no-browser", action="store_true", help="with --view: do not open a browser")
+    s.add_argument("--no-wait", action="store_true", help="with --view: quit when the run ends")
+    s.add_argument("--agent", default="oracle", help="oracle | random | module:function (default: oracle)")
+    s.add_argument("--episodes", type=int, help="episodes to play (0: until Ctrl+C; default: the "
+                                                "fixed episodes, else 5)")
+    s.add_argument("--steps", type=int, help="stop after this many steps")
+    s.add_argument("--fps", type=float, help="steps per second (default: real time with --view, "
+                                             "else as fast as possible)")
+    s.add_argument("--no-auto-reset", action="store_true",
+                   help="--serve: do not start the next episode by itself (the client resets)")
+    s.add_argument("--vectorization", choices=["async", "sync"],
+                   help="--serve with several envs: one process per env (async, default) or one process")
+    s.set_defaults(fn=cmd_sim)
+
     s = sub.add_parser("init", help="create a workspace")
     s.add_argument("dir")
     s.set_defaults(fn=cmd_init)
@@ -419,6 +589,42 @@ def parser():
     s.add_argument("--no-preview", action="store_true")
     s.set_defaults(fn=cmd_build)
 
+    s = sub.add_parser("build-map", help="GLB scenes -> navigation maps and tasks (a dataset)",
+                       description="Copy GLB files (or folders of them, e.g. an HM3D split) into the "
+                                   "workspace and build a dataset from them; adds them to the dataset "
+                                   "if it exists (see hm3denv.build.importer).")
+    s.add_argument("inputs", nargs="+", help=".glb files or folders")
+    s.add_argument("--name", default="my-maps", help="dataset name (default: my-maps)")
+    s.add_argument("--env", choices=["svg", "grid"], default="svg",
+                   help="svg: continuous maps for every robot (default); grid: robot-sized cells")
+    s.add_argument("--robots", nargs="+", metavar="ROBOT",
+                   help="svg: these robots (default: all 9); grid: the robot of the cells (default jetauto_pro)")
+    s.add_argument("--up", choices=sorted(UP_AXES), help="up axis of the meshes (default: detected)")
+    s.add_argument("--replace", action="store_true", help="replace a different GLB of the same name")
+    s.add_argument("--no-preview", action="store_true", help="skip the preview images (faster)")
+    s.add_argument("--no-verify", action="store_true", help="skip the 3D mesh checks of the tasks (faster)")
+    s.add_argument("--review", action="store_true", help="open the storey review tool at the end")
+    s.set_defaults(fn=cmd_build_map)
+
+    s = sub.add_parser("extend", help="continue a dataset: new scenes, more tasks, new robots",
+                       description="Add to a dataset without touching what is in it (see "
+                                   "hm3denv.build.extend). Writes <name>-ext unless --in-place.")
+    s.add_argument("name", help="dataset name or path (downloaded, built, or in data/datasets)")
+    s.add_argument("--status", action="store_true", help="show what is in it and what can be added")
+    g = s.add_mutually_exclusive_group()
+    g.add_argument("--new-scenes", action="store_true",
+                   help="add every scene not in it yet (GLBs of the workspace / scene builder output)")
+    g.add_argument("--scenes", nargs="+", metavar="SCENE", help="add these scenes")
+    s.add_argument("--add-tasks", type=int, default=0, metavar="K", help="K more tasks on every existing map")
+    s.add_argument("--robots", nargs="+", metavar="ROBOT", help="add tasks for these robots (SVG datasets)")
+    s.add_argument("--out", help="name of the extended dataset (default: <name>-ext)")
+    s.add_argument("--in-place", action="store_true", help="change the dataset itself")
+    s.add_argument("--no-verify", action="store_true",
+                   help="do not check new tasks on the 3D mesh (no GLB needed for old scenes)")
+    s.add_argument("--source", help="Isaac-Scene-Builder output folder, if it moved")
+    s.add_argument("--from-hf", action="store_true", help="download the dataset first if it is not here")
+    s.set_defaults(fn=cmd_extend)
+
     s = sub.add_parser("verify", help="re-check every task on the 3D mesh")
     s.add_argument("name")
     s.add_argument("--robot")
@@ -428,11 +634,11 @@ def parser():
 
 def main(argv=None):
     args = parser().parse_args(argv)
-    logging.basicConfig(level=logging.INFO if args.verbose or args.cmd in ("build", "slice") else logging.WARNING,
+    logging.basicConfig(level=logging.INFO if args.verbose or args.cmd in ("build", "slice", "extend", "build-map") else logging.WARNING,
                         format="%(message)s")
     try:
         return args.fn(args) or 0
-    except (paths.WorkspaceNotFound, FileNotFoundError, FileExistsError, KeyError, ValueError,
+    except (paths.WorkspaceNotFound, OSError, KeyError, ValueError,
             PermissionError, ImportError) as e:
         if args.verbose:
             raise

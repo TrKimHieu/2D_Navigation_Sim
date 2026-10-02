@@ -13,3 +13,4 @@ _legacy
 venv
 *.md
 !README.md
+data

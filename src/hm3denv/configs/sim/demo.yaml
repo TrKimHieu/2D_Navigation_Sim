@@ -1,0 +1,16 @@
+# Simulation session on the bundled demo data (.\sim.bat demo --view).
+# Every key is optional; see `hm3d sim --help` and docs/features/simulate.md.
+dataset: demo-svg            # a dataset name in data/datasets, a demo, or a path
+robot: turtlebot4
+split: train                 # train | val | test | null (every split)
+num_envs: 2                  # environments side by side
+seed: 0
+task_filter:                 # random tasks of 2 to 12 m only
+  geodesic_m: {min: 2, max: 12}
+env:                         # any argument of HM3D/Svg-v0 (or HM3D/Grid-v0)
+  dt: 0.1
+  n_beams: 72
+  reward: dense
+auto_reset: true
+server: {bind: "tcp://127.0.0.1:5555"}
+viewer: {host: 127.0.0.1, port: 8770}

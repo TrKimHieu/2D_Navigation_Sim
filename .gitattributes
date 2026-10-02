@@ -1,3 +1,9 @@
 # Dataset files are checked byte for byte against the sha256 in their manifest.json:
 # git must never convert their line endings (core.autocrlf would break the hashes).
 src/hm3denv/demo/** -text
+
+# Shell scripts must keep LF endings to run on Linux / macOS after a Windows checkout.
+*.sh text eol=lf
+
+# Windows launchers keep CRLF endings (cmd.exe misparses LF-only batch files).
+*.bat text eol=crlf

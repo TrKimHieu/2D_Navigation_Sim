@@ -28,7 +28,7 @@ import numpy as np
 from gymnasium import spaces
 
 from ..core.gridcore import MOVES, bfs, lidar_scan
-from .base import EpisodeSource, spl
+from .base import EpisodeSource, as_point, custom_endpoints, spl
 
 LABELS = ("p0", "sa_uniform", "sa_persist", "starved", "level")
 
@@ -95,15 +95,15 @@ class GridEnv(EpisodeSource, gym.Env):
 
     def _goal_dist(self) -> np.ndarray:
         """BFS steps from the goal to every cell (float, inf = unreachable)."""
-        g = self.ctx.goal_bfs
-        d = g.get(self.task_idx)
+        g, key = self.ctx.goal_bfs, self._bfs_key
+        d = g.get(key)
         if d is None:
             steps = bfs(self.grid == 0, self.goal)
-            d = g[self.task_idx] = np.where(steps < 0, np.inf, steps).astype(float)
+            d = g[key] = np.where(steps < 0, np.inf, steps).astype(float)
             while len(g) > 8:
                 g.popitem(last=False)
         else:
-            g.move_to_end(self.task_idx)
+            g.move_to_end(key)
         return d
 
     @property
@@ -118,9 +118,14 @@ class GridEnv(EpisodeSource, gym.Env):
         super().reset(seed=seed)
         flt = (lambda t: t["labels"].get("level") == self.difficulty) if self.difficulty else None
         self.map_id, self.ctx, self.task_idx = self._choose(options, flt)
-        t = self.tasks[self.task_idx]
-        self.start, self.goal = list(t["start"]["cell"]), list(t["goal"]["cell"])
-        self.d_bfs = t["labels"]["d_bfs"]
+        custom = custom_endpoints(options)
+        if custom:
+            t = self._custom_task(*custom)
+        else:
+            t = self.tasks[self.task_idx]
+            self.start, self.goal = list(t["start"]["cell"]), list(t["goal"]["cell"])
+            self._bfs_key = self.task_idx
+            self.d_bfs = t["labels"]["d_bfs"]
         self.agent_pos = list(self.start)
         self.steps = self.moves = self.bumps = 0
         self._gd = self._goal_dist()
@@ -130,6 +135,32 @@ class GridEnv(EpisodeSource, gym.Env):
                 "map_id": self.map_id, "task_idx": self.task_idx, "task_id": self.task_idx,
                 "split": self.ctx.header.get("split", self.split)}
         return self._get_obs(), info
+
+    def _custom_task(self, start, goal) -> dict:
+        """Your own start and goal cells on the current map, checked: inside the grid,
+        free, different and connected."""
+        R, C = self.grid.shape
+        cells = []
+        for which, v in (("start", start), ("goal", goal)):
+            if isinstance(v, dict) and "cell" in v:
+                v = v["cell"]
+            r, c = (int(round(x)) for x in as_point(v, ("row", "col"), 2))
+            if not (0 <= r < R and 0 <= c < C):
+                raise ValueError(f"{which} cell ({r}, {c}) is outside the {R} x {C} grid of {self.map_id}")
+            if self.grid[r, c] != 0:
+                raise ValueError(f"{which} cell ({r}, {c}) of {self.map_id} is blocked")
+            cells.append([r, c])
+        if cells[0] == cells[1]:
+            raise ValueError("start and goal are the same cell")
+        self.start, self.goal = cells
+        self.task_idx, self._bfs_key = -1, ("goal", *self.goal)
+        d = self._goal_dist()[self.start[0], self.start[1]]
+        if not np.isfinite(d):
+            raise ValueError(f"goal {tuple(self.goal)} cannot be reached from start {tuple(self.start)} "
+                             f"on {self.map_id}")
+        self.d_bfs = int(d)
+        return {"id": -1, "start": {"cell": self.start}, "goal": {"cell": self.goal},
+                "labels": {"d_bfs": self.d_bfs}}
 
     def step(self, action):
         dr, dc = MOVES[int(action)]

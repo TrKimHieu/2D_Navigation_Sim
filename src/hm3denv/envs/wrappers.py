@@ -6,6 +6,7 @@ DiscreteActions   Habitat-style discrete actions for the SVG env (forward/backwa
 EpisodeRecorder   one JSONL line per finished episode (common schema for both envs).
 CustomReward      reward = fn(info), built from info["reward_terms"] and the step info.
 Coverage          info["coverage"]: share of the map's free area seen by the LiDAR so far.
+EpisodeSchedule   fixed episodes / a map subset for resets without options (training).
 """
 
 from __future__ import annotations
@@ -170,3 +171,29 @@ class Coverage(gym.Wrapper):
         rr, cc = rr[inb], cc[inb]
         self._seen[rr, cc] |= self._free[rr, cc]
         self._value = float(self._seen.sum()) / self._n_free
+
+
+class EpisodeSchedule(gym.Wrapper):
+    """Chooses the episode when reset() is called without options (as training libraries
+    do): the next entry of `episodes` (reset options: map_id + task_idx, or map_id + start
+    + goal), played in turn from `offset`, or else a random map of `maps`. Explicit reset
+    options still win."""
+
+    def __init__(self, env, maps=None, episodes=None, offset=0, seed=0):
+        super().__init__(env)
+        if not maps and not episodes:
+            raise ValueError("EpisodeSchedule needs maps or episodes")
+        self.maps, self.episodes = list(maps or []), list(episodes or [])
+        self._k = int(offset)
+        self._rng = np.random.default_rng([int(seed), int(offset)])
+
+    def reset(self, *, seed=None, options=None):
+        if options is None:
+            if self.episodes:
+                options = dict(self.episodes[self._k % len(self.episodes)])
+                self._k += 1
+                if "map_id" not in options and self.maps:
+                    options["map_id"] = self.maps[0]
+            else:
+                options = {"map_id": self.maps[int(self._rng.integers(len(self.maps)))]}
+        return self.env.reset(seed=seed, options=options)

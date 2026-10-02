@@ -39,5 +39,5 @@ def test_ci_workflow_parses():
     if not ci.exists():
         pytest.skip("not inside the repository")
     wf = yaml.safe_load(ci.read_text(encoding="utf-8"))
-    assert set(wf["jobs"]) == {"tests", "docker"}
+    assert set(wf["jobs"]) == {"tests", "docker", "scripts"}
     assert (PKG / "Dockerfile").exists()

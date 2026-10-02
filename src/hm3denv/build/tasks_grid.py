@@ -116,6 +116,56 @@ def to_schema(i, t, meta) -> dict:
             "labels": {k: t[k] for k in LABEL_KEYS}}
 
 
+def checker(ws, meta: dict, robot: dict):
+    """check(r, c) of a grid cell on the 3D mesh (verify.check_cell)."""
+    return lambda r, c: check_cell(ws, meta, r, c, robot["height"])
+
+
+def check_rows(map_id, checked) -> list[dict]:
+    """verify/<robot>.csv rows of the 3D checks of one grid."""
+    return [{"map_id": map_id, "task": "", "which": "candidate", "r": r, "c": c,
+             **dict(zip("xyz", chk["world"])),
+             **{k: chk[k] for k in ("support", "clear_hits", "margin_hits", "roof", "ok")},
+             "bfs_ok": ""}
+            for (r, c), chk in checked.items()]
+
+
+def map_tasks(ws, root: Path, dataset: str, robot: dict, splits: dict, p: GridTaskParams,
+              grid_json: Path) -> tuple[dict, list]:
+    """Sample and write the tasks of one grid (tasks/<robot>/<map_id>.json; removed when
+    no task fits). Returns (per-map stats, verify rows)."""
+    root = Path(root)
+    map_id = grid_json.stem
+    meta = json.loads(grid_json.read_text(encoding="utf-8"))
+    z = np.load(root / "grids" / f"{map_id}.npz")
+    check = checker(ws, meta, robot) if p.verify else None
+    tasks, checked = sample_map(z["grid"], z["main"], p.k, p.d_min, p.budget - p.slack, p.budget,
+                                map_rng(p.seed, map_id), check, p.repeat_p)
+    rows = check_rows(map_id, checked)
+    n_chk = len(checked)
+    fail = sum(not v["ok"] for v in checked.values()) / n_chk if n_chk else 0.0
+    flags = list(meta.get("flags", []))
+    if fail > p.flag_fail:
+        flags.append(f"verify_fail {fail:.0%}")
+    if len(tasks) < p.k:
+        flags.append(f"only {len(tasks)}/{p.k} tasks")
+    levels = {lv: sum(t["level"] == lv for t in tasks) for lv in ("easy", "medium", "hard", "starved")}
+    stats = {"tasks": len(tasks), "checked": n_chk, "verify_fail": round(fail, 3),
+             "levels": levels, "shape": meta["shape"], "main_m2": meta["main_m2"], "flags": flags}
+    out = root / "tasks" / robot["id"] / f"{map_id}.json"
+    if not tasks:
+        # e.g. a roof terrace: every cell fails the roof test -> not in the dataset
+        out.unlink(missing_ok=True)
+        log.info("  %s: 0 tasks, left out  FLAG %s", map_id, flags)
+        return stats, rows
+    task_file(root, dataset=dataset, env="grid", map_id=map_id, robot=robot["id"], splits=splits,
+              budget=p.budget, cell_m=meta["cell_m"],
+              tasks=[to_schema(i, t, meta) for i, t in enumerate(tasks)])
+    log.info("  %s: %d tasks, %d cells checked, %.0f%% failed, %s%s", map_id, len(tasks),
+             n_chk, fail * 100, levels, f"  FLAG {flags}" if flags else "")
+    return stats, rows
+
+
 def run(ws, root: Path, dataset: str, robot: dict, splits: dict,
         params: GridTaskParams | None = None) -> dict:
     """Sample tasks on every grid of the dataset for `robot` (preset dict). Writes
@@ -125,42 +175,10 @@ def run(ws, root: Path, dataset: str, robot: dict, splits: dict,
     rid = robot["id"]
     tdir = root / "tasks" / rid
     tdir.mkdir(parents=True, exist_ok=True)
-    d_max = p.budget - p.slack
     rows, per_map = [], {}
     for mj in sorted((root / "grids").glob("*.json")):
-        map_id = mj.stem
-        meta = json.loads(mj.read_text(encoding="utf-8"))
-        z = np.load(root / "grids" / f"{map_id}.npz")
-        check = (lambda r, c, meta=meta: check_cell(ws, meta, r, c, robot["height"])) if p.verify else None
-        tasks, checked = sample_map(z["grid"], z["main"], p.k, p.d_min, d_max, p.budget,
-                                    map_rng(p.seed, map_id), check, p.repeat_p)
-        for (r, c), chk in checked.items():
-            rows.append({"map_id": map_id, "task": "", "which": "candidate", "r": r, "c": c,
-                         **dict(zip("xyz", chk["world"])),
-                         **{k: chk[k] for k in ("support", "clear_hits", "margin_hits", "roof", "ok")},
-                         "bfs_ok": ""})
-        n_chk = len(checked)
-        fail = sum(not v["ok"] for v in checked.values()) / n_chk if n_chk else 0.0
-        flags = list(meta.get("flags", []))
-        if fail > p.flag_fail:
-            flags.append(f"verify_fail {fail:.0%}")
-        if len(tasks) < p.k:
-            flags.append(f"only {len(tasks)}/{p.k} tasks")
-        levels = {lv: sum(t["level"] == lv for t in tasks) for lv in ("easy", "medium", "hard", "starved")}
-        per_map[map_id] = {"tasks": len(tasks), "checked": n_chk, "verify_fail": round(fail, 3),
-                           "levels": levels, "shape": meta["shape"], "main_m2": meta["main_m2"],
-                           "flags": flags}
-        out = tdir / f"{map_id}.json"
-        if not tasks:
-            # e.g. a roof terrace: every cell fails the roof test -> not in the dataset
-            out.unlink(missing_ok=True)
-            log.info("  %s: 0 tasks, left out  FLAG %s", map_id, flags)
-            continue
-        task_file(root, dataset=dataset, env="grid", map_id=map_id, robot=rid, splits=splits,
-                  budget=p.budget, cell_m=meta["cell_m"],
-                  tasks=[to_schema(i, t, meta) for i, t in enumerate(tasks)])
-        log.info("  %s: %d tasks, %d cells checked, %.0f%% failed, %s%s", map_id, len(tasks),
-                 n_chk, fail * 100, levels, f"  FLAG {flags}" if flags else "")
+        per_map[mj.stem], r = map_tasks(ws, root, dataset, robot, splits, p, mj)
+        rows += r
     for old in tdir.glob("*.json"):                   # grids removed by gridify
         if not per_map.get(old.stem, {}).get("tasks"):
             old.unlink()

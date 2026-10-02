@@ -1,6 +1,10 @@
 """Episode selection and metrics shared by the grid and SVG environments.
 
 Episode selection at reset (first match wins):
+  0. ``reset(options={"map_id": ..., "start": ..., "goal": ...})``: your own start and
+     goal on that map instead of a task of the dataset (checked: the start must be free,
+     the goal reachable; ValueError otherwise). Continuous env: start (x, y[, theta]),
+     goal (x, y) in metres; grid env: start and goal (row, col) cells. task_id is -1.
   1. ``reset(options={"map_id": ..., "task_idx": ...})``
   2. the fixed ``map_id`` / ``task_idx`` given to the constructor
   3. otherwise a map drawn uniformly from the split, then a task uniformly from the
@@ -98,6 +102,11 @@ class EpisodeSource:
     def _choose(self, options, task_filter=None):
         options = options or {}
         map_id = options.get("map_id", self._fixed_map)
+        if custom_endpoints(options) and map_id is None:
+            if len(self._map_ids) > 1:
+                raise ValueError("a custom start/goal needs map_id in the reset options "
+                                 f"(maps: {self._map_ids[:5]}{' ...' if len(self._map_ids) > 5 else ''})")
+            map_id = self._map_ids[0]
         if map_id is None and self._sticky_left > 0:
             map_id = self._sticky_map
             self._sticky_left -= 1
@@ -117,6 +126,26 @@ class EpisodeSource:
             pool = pool or base
             idx = pool[int(self.np_random.integers(len(pool)))]
         return map_id, ctx, int(idx) % n
+
+
+def custom_endpoints(options) -> tuple | None:
+    """(start, goal) given in reset options, or None. Both are needed."""
+    if not options or ("start" not in options and "goal" not in options):
+        return None
+    if options.get("start") is None or options.get("goal") is None:
+        raise ValueError("a custom episode needs both 'start' and 'goal'")
+    return options["start"], options["goal"]
+
+
+def as_point(v, names, n_min) -> list[float]:
+    """[a, b, ...] from a sequence or a mapping with keys `names` (trailing ones optional)."""
+    if isinstance(v, dict):
+        v = [v[k] for k in names if k in v]
+    v = [float(x) for x in v]
+    if not n_min <= len(v) <= len(names):
+        raise ValueError(f"expected {', '.join(names[:n_min])}"
+                         f"{'[, ' + ', '.join(names[n_min:]) + ']' if len(names) > n_min else ''}, got {v}")
+    return v
 
 
 _MISSING = object()

@@ -1,0 +1,11 @@
+# Fixed episodes, played in turn: tasks of the dataset and your own start / goal pairs.
+# .\sim.bat custom_pairs --view
+dataset: demo-svg
+robot: turtlebot4
+num_envs: 1
+episodes:
+  - {map: demo-S001_s0, task_idx: 3}                              # task 3 of the dataset
+  - {map: demo-S001_s0, start: [2.48, 12.36, 0.0], goal: [4.84, 10.72]}   # metres, radians
+  - {map: demo-S040_s0, start: [3.12, 3.56], goal: [10.88, 3.76]}  # theta omitted: face the goal
+# For a grid dataset the start and goal are [row, col] cells, e.g.
+#   - {map: demo-S001_s0, start: [43, 51], goal: [29, 51]}

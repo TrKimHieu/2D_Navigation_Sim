@@ -20,7 +20,11 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+try:        # previews and contact sheets need Pillow (build extra); robots_svg and the
+            # episode renderers (hm3d render, hm3d robots render) only need numpy + cv2
+    from PIL import Image, ImageDraw, ImageFont
+except ImportError:
+    Image = ImageDraw = ImageFont = None
 
 from .. import paths
 from ..core.geometry import place

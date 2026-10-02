@@ -45,6 +45,23 @@ def assign_splits(scenes, fractions: dict, seed: int = 0) -> dict[str, list[str]
             "test": sorted(order[n_train + n_val:])}
 
 
+def assign_splits_incremental(old: dict, new_scenes, fractions: dict, seed: int = 0) -> dict:
+    """Splits of an extended dataset: every scene of `old` keeps its split (tasks already
+    used for training never move to test); the new scenes, in the order of assign_splits,
+    each go to the split furthest below its target share of the new total."""
+    known = {s for v in old.values() for s in v}
+    new = [s for s in sorted(set(new_scenes) - known,
+                             key=lambda s: hashlib.sha1(f"{seed}:{s}".encode()).hexdigest())]
+    out = {k: sorted(old.get(k, [])) for k in SPLITS}
+    total = len(known)
+    for s in new:
+        total += 1
+        k = max(SPLITS, key=lambda k: (fractions.get(k, 0.0) * total - len(out[k]),
+                                       -SPLITS.index(k)))
+        out[k].append(s)
+    return {k: sorted(v) for k, v in out.items()}
+
+
 def split_of(splits: dict, map_id: str) -> str:
     sc = scene_of(map_id)
     for name, scenes in splits.items():
