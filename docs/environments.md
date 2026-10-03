@@ -13,7 +13,7 @@ environments on top of it:
 |---|---|---|
 | Map | polygons in metres (SVG) | square cells, one robot body each |
 | Robot | real footprint and speed limits of 9 real robots | one cell, moves in 4 directions |
-| Action | `Box[-1, 1]^k`: v, (v_y), ω scaled to the robot | `Discrete(4)`: up / down / left / right |
+| Action | `Box(-1, 1, (k,), float32)`: k = 2 (v, ω) or 3 (v, v_y, ω), multiplied by the robot's speed limits | `Discrete(4)`: up / down / left / right |
 | Observation | LiDAR (real FOV and range) + goal + velocity | LiDAR in cells (no goal) |
 | Speed | ~0.3–0.6 ms per step | ~0.05 ms per step |
 
@@ -84,9 +84,19 @@ real experiments.
 | `goal` | `(3,)` | distance to the goal and sin / cos of its bearing in the robot frame |
 | `velocity` | `(2,)` or `(3,)` | current (v, [v_y], ω) |
 
-**Action** — `Box[-1, 1]^k`, scaled by the robot limits: k = 2 (v, ω) for differential
-drives, 3 (v, v_y, ω) for omnidirectional robots. `hm3denv.envs.DiscreteActions` gives
-Habitat-style discrete actions (stay, forward / backward 0.25 m, turn ±15°, strafe).
+**Action** — `gymnasium.spaces.Box(low=-1, high=1, shape=(k,), dtype=float32)`, printed as
+`Box(-1.0, 1.0, (2,), float32)`. k depends on the robot's drive ([Robots](robots.md)):
+
+| Drive | k | Action | Robots |
+|---|---|---|---|
+| differential | 2 | (v, ω) | the other 8 presets |
+| omnidirectional | 3 | (v, v_y, ω) | `jetauto_pro` |
+
+The action is normalised; the environment clips it to [-1, 1] and multiplies each component by
+the robot's limit: v = a₀ · v_max (forward, m/s; a negative a₀ uses |v_min|), v_y = a₁ · vy_max
+(sideways, positive to the left, m/s), ω = a₋₁ · ω_max (rad/s, positive counter-clockwise).
+`hm3denv.envs.DiscreteActions` gives Habitat-style discrete actions (stay, forward / backward
+0.25 m, turn ±15°, strafe).
 
 **Reward** — `reward="dense"` (default):
 `progress + 10·success − 0.1·collision − 0.01` per step, where *progress* is the decrease of the

@@ -18,7 +18,7 @@ Stable-Baselines3 into `.venv`.
 | Option | Meaning |
 |---|---|
 | `--config FILE` | a [session file](simulate.md#choosing-what-to-simulate): dataset, robot, maps, fixed episodes, task filter, environment arguments, `num_envs` |
-| `--dataset`, `--robot` | override the file (default: `demo-svg`, `turtlebot4`) |
+| `--dataset`, `--robot` | override the file (default: `demo-svg`, `turtlebot4`); [datasets](../datasets.md) and the robots each contains, [robot ids](../robots.md) |
 | `--steps N` | training steps (default 200 000) |
 | `--n-envs N` | parallel environments (default: the file's `num_envs` if > 1, else up to 8) |
 | `--out DIR` | run folder (default `runs/<dataset>_<robot>`) |

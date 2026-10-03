@@ -25,8 +25,8 @@ override the file.
 
 | Option | Session file key | Meaning |
 |---|---|---|
-| `--dataset NAME` | `dataset` | dataset name (`data/datasets`, demos `demo-svg` / `demo-grid`) or path |
-| `--robot ID` | `robot` | robot preset (`hm3d info NAME` lists the dataset's robots) |
+| `--dataset NAME` | `dataset` | dataset name (`data/datasets`, demos `demo-svg` / `demo-grid`) or path; [list of datasets](../datasets.md) |
+| `--robot ID` | `robot` | robot preset id, see the [list of robots](../robots.md); it must be one of the dataset's robots ([which dataset has which robots](../datasets.md), or `hm3d info NAME`) |
 | `--split S` | `split` | `train`, `val` or `test` maps |
 | `--map M ...` | `maps` | only these maps (ids like `demo-S001_s0`) |
 | `--task I` | `episodes: [{map: M, task_idx: I}]` | a task of the dataset (a prepared start / goal pair) |

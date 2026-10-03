@@ -37,7 +37,7 @@ skipped.
 |---|---|
 | `--name NAME` | dataset name (default `my-maps`) |
 | `--env svg \| grid` | continuous maps for every robot (default), or grid cells |
-| `--robots ID ...` | SVG: these robots (default all 9); grid: the robot whose size sets the cells (default `jetauto_pro`) |
+| `--robots ID ...` | SVG: these robots (default all 9, [list](../robots.md)); grid: the robot whose size sets the cells (default `jetauto_pro`) |
 | `--up x \| y \| z` | up axis of the meshes, if the detection gets it wrong |
 | `--replace` | a different GLB with the same scene name is already there: replace it |
 | `--no-preview`, `--no-verify` | skip the preview images / the 3D checks of the tasks (faster) |

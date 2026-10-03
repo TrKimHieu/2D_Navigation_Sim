@@ -6,7 +6,8 @@ Observation ``Dict``:
     lidar     n_beams ranges (m) over the robot's real LiDAR FOV, clipped to [range_min, range_max]
     goal      (distance, sin, cos) of the goal bearing in base_link
     velocity  current (v, [vy], w)
-Action ``Box[-1, 1]^k`` scaled by the robot limits (k = 2 differential, 3 omnidirectional).
+Action ``Box(-1, 1, (k,), float32)``: (v, w) for differential drives (k = 2), (v, vy, w) for
+omnidirectional ones (k = 3); each component is multiplied by the robot's limit.
 
 Motion is integrated exactly over dt, split into sub-steps of <= 2 cm and <= 2
 degrees so fast robots cannot tunnel through thin walls. A colliding sub-step
@@ -388,7 +389,7 @@ class SvgEnv(EpisodeSource, gym.Env):
         if terminated or truncated:
             info.update(self.episode_metrics(success, "success" if success else
                                              "collision" if terminated else "time_limit"))
-        return self._obs(), float(reward), terminated, truncated, info
+        return self._obs(), float(reward), bool(terminated), bool(truncated), info
 
     def episode_metrics(self, success, reason) -> dict:
         return {"map_id": self.map_id, "task_id": self._cur,

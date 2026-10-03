@@ -74,6 +74,8 @@ token sai/hết hạn (`hf auth login`), 5 = tài khoản chưa được cấp q
 .\sim.bat my_sim.yaml --serve --view                                    :: chương trình của bạn điều khiển
 ```
 
+- `--robot` nhận ID trong [danh sách robot](docs/robots.md); robot phải có trong dataset đã chọn
+  ([dataset nào có robot nào](docs/datasets.md), hoặc `hm3d info <tên>`).
 - Xuất phát / đích tính bằng mét trong hệ tọa độ map (góc theta tính bằng radian, mặc định quay
   về phía đích); với dataset dạng lưới là ô `hàng,cột`. Điểm nằm trong tường hoặc đích không tới
   được sẽ bị từ chối kèm lý do.

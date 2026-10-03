@@ -14,6 +14,11 @@
 | `turtlebot4` | differential | 0.31 | 1.9 | 0.35 | 360° / 12 m |
 | `turtlebot4_lite` | differential | 0.31 | 1.9 | 0.19 | 360° / 12 m |
 
+The preset id is what `--robot` / `robot=` takes. A dataset only has tasks for some robots:
+see [which dataset has which robots](datasets.md) or run
+`hm3d info NAME`. *Drive* sets the action size: differential 2 (v, ω), omnidirectional 3
+(v, v_y, ω), see [`HM3D/Svg-v0`](environments.md#hm3dsvg-v0-continuous).
+
 Every number in a preset (JSON) has a source: `official` with a URL, or `estimated` with the
 method. Footprints of 8 robots are real sections of the manufacturers' URDF; JetAuto Pro is a
 32.4 × 26 cm box. Robots are grouped into height classes (`h36`, `h63`, `h145`) that decide

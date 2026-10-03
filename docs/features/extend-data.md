@@ -7,7 +7,7 @@ of rebuilding it:
 
 - **new scenes** (more buildings → more maps and tasks),
 - **more tasks** on the maps it already has,
-- **new robots** (continuous datasets).
+- **new robots** (continuous datasets; ids in the [list of robots](../robots.md)).
 
 ```bash
 .\extend-data.bat svg-v1 --status                       # what is in it, what can be added

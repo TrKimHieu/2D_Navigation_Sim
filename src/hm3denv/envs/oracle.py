@@ -47,7 +47,7 @@ class OracleFollower:
         return self.path[j]
 
     def act(self) -> np.ndarray:
-        """Normalised action in [-1, 1]^k."""
+        """Normalised action, shape (k,), every component in [-1, 1]."""
         x, y, th = self.u.pose
         r = self.u.robot
         tx, ty = self._target(x, y)
