@@ -54,6 +54,11 @@ def _agent_factory(spec: str):
     mod, _, attr = spec.partition(":")
     if not attr:
         raise ValueError("agent must be 'oracle', 'random' or 'module:callable'")
+    # console scripts (hm3d) do not put the working directory on sys.path, as `python -m`
+    # does: a module of the user's project would not be found from its own folder
+    cwd = str(Path.cwd())
+    if cwd not in sys.path:
+        sys.path.insert(0, cwd)
     return getattr(importlib.import_module(mod), attr)
 
 

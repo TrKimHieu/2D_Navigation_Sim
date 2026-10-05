@@ -62,3 +62,18 @@ def test_eval_mean_progress(svg_dataset, grid_dataset):
     # without the distance keys in info (nav_info=False) there is nothing to measure
     s = evaluate(svg_dataset, robot="turtlebot4", agent="random", per_map=1, nav_info=False)
     assert s["mean_progress"] is None
+
+
+def test_eval_agent_module_in_the_working_directory(svg_dataset, tmp_path, monkeypatch):
+    """`hm3d eval --agent mypkg.policies:make` from the user's project folder: the console
+    script does not put the working directory on sys.path, the agent loader must."""
+    (tmp_path / "mypkg").mkdir()
+    (tmp_path / "mypkg" / "__init__.py").write_text("")
+    (tmp_path / "mypkg" / "policies.py").write_text(
+        "def make(env):\n    return lambda obs: env.action_space.sample()\n")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "path", [p for p in sys.path if p not in ("", ".", str(tmp_path))])
+    for name in [m for m in sys.modules if m == "mypkg" or m.startswith("mypkg.")]:
+        monkeypatch.delitem(sys.modules, name)
+    assert main(["eval", str(svg_dataset), "--robot", "turtlebot4", "--per-map", "1",
+                 "--agent", "mypkg.policies:make", "--quiet"]) == 0

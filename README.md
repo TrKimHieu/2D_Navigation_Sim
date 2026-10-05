@@ -49,7 +49,7 @@ or on Linux / macOS:
 ```
 
 The first run creates `.venv` (a few minutes), then a browser tab shows a robot driving to its
-goal in a demo map. Small demo datasets (`demo-svg`, `demo-grid`) are included; get the full
+goal in a demo map, one episode after the other until you press Ctrl+C. Small demo datasets (`demo-svg`, `demo-grid`) are included; get the full
 ones with `get-data` (needs a free Hugging Face account and an access request, see
 [get-data](docs/features/get-data.md)).
 
@@ -61,7 +61,7 @@ setup.bat, setup.sh          install or update .venv yourself (.\setup.bat --all
 data/                        everything downloaded or built: data/datasets/<name>, data/raw/glb, ...
 src/hm3denv/                 the Python package (environments, simulator, dataset tools)
 src/hm3denv/configs/sim/     example session files for sim / train (.\sim.bat demo)
-examples/                    quickstart.py, train_ppo.py, remote_client.py
+examples/                    quickstart.py, train_ppo.py, train_custom.py, remote_client.py
 docs/                        guides
 ```
 
@@ -83,6 +83,10 @@ Activate the environment first (`.venv\Scripts\activate.bat`, PowerShell
 `hm3d eval isb-svg-v1 --robot turtlebot4 --agent mypkg.policies:make` (`make(env)` returns
 `policy(obs) -> action`). All commands: `hm3d --help`.
 
+**Your own algorithm** (another RL method, another library, your own training loop): the
+observation, action, truncation and evaluation details, and a plain-PyTorch template:
+[Use your own algorithm](docs/features/own-algorithm.md).
+
 ## Troubleshooting
 
 | Problem | Fix |
@@ -98,6 +102,7 @@ Activate the environment first (`.venv\Scripts\activate.bat`, PowerShell
 ## More
 
 [Environments & API](docs/environments.md) ·
+[Use your own algorithm](docs/features/own-algorithm.md) ·
 [Datasets](docs/datasets.md) ·
 [Robots](docs/robots.md) ·
 [Building datasets in detail](docs/building-datasets.md) ·

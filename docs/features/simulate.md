@@ -62,7 +62,10 @@ Packaged examples (use them by name): `.\sim.bat demo`, `.\sim.bat custom_pairs`
 `--view` opens <http://127.0.0.1:8770/> in the browser: the map, the robot, its path, the
 goal, and the episode's numbers, for any environment of the session. `--agent oracle |
 random | mypkg.module:make` chooses who drives (`make(env)` returns `policy(obs) -> action`,
-as for `hm3d eval`); `--episodes N` (0 = until Ctrl+C), `--fps` the speed.
+as for `hm3d eval`); `--fps` the speed. The agent plays **until Ctrl+C** (or `--episodes N`:
+N episodes of all environments together; fixed episodes are played once). The header of the
+page shows the run: running / finished / stopped, episodes played, success rate and SPL. When
+a run finishes, environments still on an episode stay where they are.
 
 ## Driving it from your program (`--serve`)
 

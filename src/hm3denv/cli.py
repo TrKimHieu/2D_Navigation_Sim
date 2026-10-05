@@ -315,8 +315,11 @@ def cmd_sim(args):
                 srv.serve_forever()
                 return
             from .sim.run import run_agent
+            # default: the fixed episodes once; else, when watching, until Ctrl+C; else 5
             episodes = args.episodes if args.episodes is not None else (
-                len(cfg["episodes"]) if cfg["episodes"] else 5)
+                len(cfg["episodes"]) if cfg["episodes"] else 0 if viewer else 5)
+            if not episodes and not args.steps:
+                print("playing until Ctrl+C (set the number with --episodes N)")
             fps = args.fps if args.fps is not None else (
                 1.0 / cfg["env"].get("dt", 0.1) if viewer and s.env_id == "HM3D/Svg-v0" else
                 10.0 if viewer else None)
@@ -552,8 +555,9 @@ def parser():
     s.add_argument("--no-browser", action="store_true", help="with --view: do not open a browser")
     s.add_argument("--no-wait", action="store_true", help="with --view: quit when the run ends")
     s.add_argument("--agent", default="oracle", help="oracle | random | module:function (default: oracle)")
-    s.add_argument("--episodes", type=int, help="episodes to play (0: until Ctrl+C; default: the "
-                                                "fixed episodes, else 5)")
+    s.add_argument("--episodes", type=int, help="episodes to play, all environments together (0: until "
+                                                "Ctrl+C; default: the fixed episodes, else until Ctrl+C "
+                                                "with --view, else 5)")
     s.add_argument("--steps", type=int, help="stop after this many steps")
     s.add_argument("--fps", type=float, help="steps per second (default: real time with --view, "
                                              "else as fast as possible)")

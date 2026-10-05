@@ -42,8 +42,11 @@ takes a full dataset and millions of steps.
 
 ## Your own algorithm
 
-[`examples/train_ppo.py`](../../examples/train_ppo.py) is short: copy it as a starting point.
-The pieces it uses:
+Full guide (observation, action, truncation, vector envs, other libraries, evaluation and
+reporting): [Use your own algorithm](own-algorithm.md). Two templates:
+[`examples/train_custom.py`](../../examples/train_custom.py) (plain PyTorch, no RL library) and
+[`examples/train_ppo.py`](../../examples/train_ppo.py) (Stable-Baselines3). The pieces
+`train_ppo.py` uses:
 
 - `hm3denv.sim.session.env_fns(cfg, n)` — picklable environment factories for any vector-env
   implementation, applying the session file's maps / fixed episodes at every reset;

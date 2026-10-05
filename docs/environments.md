@@ -129,7 +129,9 @@ At the end of an episode `info` also has `success`, `spl`, `path_length`, `time`
 so a house never appears in two splits), `map_id`, `task_idx`, `dt=0.1`, `n_beams=72`,
 `lidar_noise=0.0` (Gaussian σ in metres; it has its own random stream so turning it on does not
 change which episodes are drawn), `reward`, `reward_weights`, `on_collision`, `time_limit`,
-`time_factor=3.0`, `success_radius`, `task_filter`, `render_mode` (`"rgb_array"` or `"svg"`).
+`time_factor=3.0`, `success_radius`, `task_filter`, `render_mode` (`"rgb_array"` or `"svg"`),
+`nav_info=True`, `map_repeat=1`; caches: `map_cache=8` maps and `field_cache=4` goal distance
+fields in memory, `disk_cache=True` ([Performance](performance.md)).
 
 ## `HM3D/Grid-v0` (grid)
 
@@ -190,6 +192,10 @@ if __name__ == "__main__":                   # required with worker processes on
   environments than physical CPU cores**; choose k ≈ environments / cores.
 - `map_repeat=K` keeps each drawn map for K consecutive episodes (fewer map loads). It makes
   consecutive episodes of one environment correlated — report it with your results.
+- `autoreset_mode=AutoresetMode.SAME_STEP` (from `gymnasium.vector`) resets a finished
+  environment inside the same `step()` and puts the last observation / info of its episode in
+  `info["final_obs"]` / `info["final_info"]`, as most hand-written training loops expect; the
+  default `NEXT_STEP` (Gymnasium's) resets it at the next `step()`, ignoring that action.
 - `hm3denv.env_fn(env_id, **kwargs)` is a picklable factory for vector-env implementations
   of other libraries that start worker processes.
 
@@ -243,7 +249,8 @@ turning to the goal and driving straight at it fails on every demo task. The def
 on the demo dataset (200 000 steps, ~5 min on 4 CPU cores) is a check of the pipeline: expect
 0 % success and a `progress` clearly above the random agent's (one run: PPO 19 %, random
 −2 %). For agents that reach goals, train on a full dataset for millions of steps. The script is short — copy it as a starting point for your
-own algorithm, reward (`CustomReward`) or curriculum (`set_task_filter`).
+own algorithm, reward (`CustomReward`) or curriculum (`set_task_filter`). Other algorithms and
+libraries, or a training loop of your own: [Use your own algorithm](features/own-algorithm.md).
 
 ## Evaluation
 

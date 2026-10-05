@@ -29,9 +29,12 @@ PAGE = """<!doctype html>
  aside { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:10px 12px; }
  table { border-collapse:collapse; width:100%; } td { padding:2px 4px; vertical-align:top; } td:first-child { color:var(--muted); }
  select { font:inherit; }
+ #run { padding:2px 10px; border-radius:12px; background:var(--line); }
+ #run:empty { display:none; }
+ #run.finished { background:#2e7d32; color:#fff; } #run.stopped, #run.error { background:#b3261e; color:#fff; }
 </style></head><body>
 <header><b>hm3denv</b><span id="title"></span>
- <label>environment <select id="env"></select></label><span id="age"></span></header>
+ <label>environment <select id="env"></select></label><span id="run"></span><span id="age"></span></header>
 <main><div id="view">loading...</div><aside><table id="stats"></table></aside></main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -44,6 +47,15 @@ async function info() {
 }
 function row(k, v) { return `<tr><td>${k}</td><td>${v ?? '–'}</td></tr>`; }
 function fmt(v) { return typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(3)) : v; }
+function pct(v) { return v == null ? '–' : `${Math.round(100 * v)} %`; }
+function runText(r) {
+  const n = r.target ? `${r.episodes}/${r.target} episodes` : `${r.episodes} episode(s)`;
+  const res = r.episodes ? ` · success ${pct(r.success)} · SPL ${(r.spl ?? 0).toFixed(3)}` : '';
+  if (r.state === 'running') return `running · ${n}${res}` + (r.target || r.max_steps ? '' : ' · Ctrl+C in the terminal to stop');
+  if (r.state === 'finished') return `finished · ${n}${res} · environments still on an episode stay where they are; Ctrl+C in the terminal to quit`;
+  if (r.state === 'stopped') return `stopped · ${n}${res}`;
+  return 'error: see the terminal';
+}
 async function tick() {
   if (busy) return; busy = true;
   try {
@@ -56,6 +68,9 @@ async function tick() {
     $('stats').innerHTML = row('map', c.map_id) + row('task', c.task_id) + row('geodesic (m)', fmt(c.geodesic_m))
       + row('steps', s.steps) + row('return', fmt(s.return)) + row('episodes done', s.episodes)
       + row('last episode', l.termination ? `${l.termination}, SPL ${fmt(l.spl)}` : null);
+    const run = await (await fetch('/status')).json();
+    $('run').textContent = run ? runText(run) : '';
+    $('run').className = run ? run.state : '';
     $('age').textContent = '';
   } catch (e) { $('age').textContent = 'simulation stopped'; }
   busy = false;
@@ -87,6 +102,8 @@ class _Handler(BaseHTTPRequestHandler):
                 self._send(PAGE.encode(), "text/html; charset=utf-8")
             elif u.path == "/info":
                 self._send(json.dumps(to_jsonable(self.session.describe())).encode(), "application/json")
+            elif u.path == "/status":
+                self._send(json.dumps(to_jsonable(self.session.run_status)).encode(), "application/json")
             elif u.path == "/stats":
                 self._send(json.dumps(to_jsonable(self.session.stats)).encode(), "application/json")
             elif u.path == "/frame":

@@ -165,6 +165,9 @@ class Session:
         self._done = [True] * n
         self.stats = [{"episodes": 0, "steps": 0, "return": 0.0, "last": None, "current": None}
                       for _ in range(n)]
+        # set by sim.run.run_agent (None: no agent runs, e.g. --serve): state "running" /
+        # "finished" / "stopped", episodes played and the target (None: until Ctrl+C)
+        self.run_status = None
 
     # ------------------------------------------------------------ episodes
 

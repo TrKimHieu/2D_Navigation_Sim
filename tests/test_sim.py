@@ -2,6 +2,8 @@
 client, browser viewer, `hm3d sim`."""
 
 import json
+import shutil
+import subprocess
 import threading
 import urllib.request
 
@@ -189,6 +191,33 @@ def test_viewer_serves_page_and_frames():
             v.stop()
 
 
+def test_viewer_reports_the_run_status():
+    from hm3denv.sim.run import run_agent
+    from hm3denv.sim.viewer import Viewer
+    with session(dataset="demo-svg") as s:
+        v = Viewer(s, port=0).start()
+        try:
+            status = lambda: json.loads(urllib.request.urlopen(v.url + "status", timeout=20).read())  # noqa: E731
+            assert status() is None                              # nothing runs an agent yet
+            run_agent(s, "oracle", episodes=1, log=lambda *_: None)
+            st = status()
+            assert st["state"] == "finished" and st["episodes"] == 1 and st["target"] == 1
+            assert st["success"] == 1.0
+        finally:
+            v.stop()
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node.js")
+def test_viewer_page_script_parses(tmp_path):
+    """The page's JavaScript is not run by the other tests: a syntax error there leaves the
+    viewer on "loading..." with no other sign."""
+    from hm3denv.sim.viewer import PAGE
+    js = tmp_path / "viewer.js"
+    js.write_text(PAGE.split("<script>")[1].split("</script>")[0], encoding="utf-8")
+    r = subprocess.run(["node", "--check", str(js)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+
+
 # ------------------------------------------------------------------ CLI
 
 def test_cli_sim_runs_fixed_episodes(capsys):
@@ -196,6 +225,16 @@ def test_cli_sim_runs_fixed_episodes(capsys):
                  "--goal", "4.84,10.72"]) == 0
     out = capsys.readouterr().out
     assert "task -1: success" in out and '"success": 1.0' in out
+
+
+def test_cli_sim_view_plays_until_stopped(capsys):
+    """With --view and no fixed episodes the agent keeps playing (default --episodes 0):
+    here it is stopped by --steps, past the 5 episodes (794 steps) of the default without
+    --view."""
+    assert main(["sim", "--dataset", "demo-svg", "--view", "0", "--no-browser", "--no-wait",
+                 "--steps", "1200", "--fps", "100000"]) == 0
+    summary = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    assert summary["steps"] == 1200 and summary["episodes"] > 5
 
 
 def test_cli_sim_reports_bad_start(capsys):

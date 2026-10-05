@@ -54,7 +54,8 @@ def limit_threads() -> None:
 
 
 def make_vec(env_id: str, num_envs: int, *, vectorization: str = "async",
-             envs_per_worker: int = 1, **kwargs):
+             envs_per_worker: int = 1,
+             autoreset_mode: str | AutoresetMode = AutoresetMode.NEXT_STEP, **kwargs):
     """``num_envs`` copies of ``gym.make(env_id, **kwargs)`` in a gymnasium vector env.
 
     vectorization: "async" (worker processes) or "sync" (same process, for debugging).
@@ -62,18 +63,22 @@ def make_vec(env_id: str, num_envs: int, *, vectorization: str = "async",
     AsyncVectorEnv, more uses GroupedVectorEnv (same results, fewer messages).
     Worker processes inherit OMP/MKL/OpenBLAS limited to one thread, so the workers do
     not oversubscribe the cores; these variables are only set where still unset.
+    autoreset_mode: gymnasium's AutoresetMode (or its value): NEXT_STEP (default, as
+    gymnasium), SAME_STEP (the finished episode's obs / info in info["final_obs"] /
+    info["final_info"], as most hand-written training loops expect) or DISABLED.
     """
     if vectorization not in ("async", "sync"):
         raise ValueError("vectorization must be 'async' or 'sync'")
     if num_envs < 1 or envs_per_worker < 1:
         raise ValueError("num_envs and envs_per_worker must be >= 1")
+    mode = AutoresetMode(autoreset_mode)
     fns = [env_fn(env_id, **kwargs)] * num_envs
     if vectorization == "sync":
-        return gym.vector.SyncVectorEnv(fns)
+        return gym.vector.SyncVectorEnv(fns, autoreset_mode=mode)
     limit_threads()
     if envs_per_worker == 1:
-        return gym.vector.AsyncVectorEnv(fns)
-    return GroupedVectorEnv(fns, envs_per_worker=envs_per_worker)
+        return gym.vector.AsyncVectorEnv(fns, autoreset_mode=mode)
+    return GroupedVectorEnv(fns, envs_per_worker=envs_per_worker, autoreset_mode=mode)
 
 
 # ------------------------------------------------------------------ worker processes

@@ -62,6 +62,7 @@ jobs:
           .venv/bin/python examples/quickstart.py --episodes 1
           ./train.sh --help
           ./train.sh --config custom_pairs --steps 2048 --n-envs 2 --eval-episodes 1 --out runs/ci
+          .venv/bin/python examples/train_custom.py --steps 2048 --n-envs 2 --eval-episodes 1 --out runs/ci-custom
           ./setup.sh --build --quiet
           .venv/bin/python tests/room_glb.py room.glb
           ./build-map.sh room.glb --robots turtlebot4 --up z --no-preview
@@ -78,6 +79,7 @@ jobs:
           .venv\Scripts\python.exe examples\quickstart.py --episodes 1 || exit /b 1
           call .\train.bat --help || exit /b 1
           call .\train.bat --config custom_pairs --steps 2048 --n-envs 2 --eval-episodes 1 --out runs\ci || exit /b 1
+          .venv\Scripts\python.exe examples\train_custom.py --steps 2048 --n-envs 2 --eval-episodes 1 --out runs\ci-custom || exit /b 1
           call .\setup.bat --build --quiet || exit /b 1
           .venv\Scripts\python.exe tests\room_glb.py room.glb || exit /b 1
           call .\build-map.bat room.glb --robots turtlebot4 --up z --no-preview || exit /b 1

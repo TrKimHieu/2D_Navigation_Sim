@@ -108,6 +108,26 @@ def test_make_vec_envs_per_worker(svg_dataset):
         make_vec("HM3D/Svg-v0", 4, envs_per_worker=0, dataset=str(svg_dataset))
 
 
+@pytest.mark.parametrize("vectorization,epw", [("sync", 1), ("async", 1), ("async", 2)])
+def test_make_vec_autoreset_mode(svg_dataset, vectorization, epw):
+    venv = make_vec("HM3D/Svg-v0", 2, vectorization=vectorization, envs_per_worker=epw,
+                    autoreset_mode="SameStep", dataset=str(svg_dataset), robot="turtlebot4",
+                    time_factor=0.05)
+    try:
+        assert venv.metadata["autoreset_mode"] == AutoresetMode.SAME_STEP
+        venv.reset(seed=0)
+        for _ in range(500):
+            _, _, term, trunc, info = venv.step(venv.action_space.sample())
+            if (term | trunc).any():
+                break
+        done = term | trunc
+        assert done.any() and (info["_final_obs"] == done).all()
+        assert info["final_info"]["termination"][done.argmax()] in ("success", "collision",
+                                                                     "time_limit")
+    finally:
+        venv.close()
+
+
 def test_shared_observations_copy_semantics(svg_dataset):
     grp = GroupedVectorEnv(svg_fns(svg_dataset), envs_per_worker=K, copy=False)
     cpy = GroupedVectorEnv(svg_fns(svg_dataset), envs_per_worker=K)

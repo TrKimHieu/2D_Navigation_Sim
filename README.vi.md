@@ -45,7 +45,8 @@ Linux / macOS:
 ```
 
 Lần đầu lệnh tạo `.venv` (vài phút), sau đó trình duyệt mở trang cho thấy robot chạy tới đích
-trong một map demo. Dataset demo nhỏ (`demo-svg`, `demo-grid`) có sẵn trong repo; dataset đầy
+trong một map demo, hết episode này sang episode khác cho tới khi bạn bấm Ctrl+C (hoặc giới hạn
+bằng `--episodes N`). Dataset demo nhỏ (`demo-svg`, `demo-grid`) có sẵn trong repo; dataset đầy
 đủ tải bằng `get-data` (cần tài khoản Hugging Face miễn phí và gửi yêu cầu truy cập, xem
 [get-data](docs/features/get-data.md)).
 
@@ -100,6 +101,10 @@ cùng được kiểm tra trên split `test` (các tòa nhà chưa thấy khi hu
 nhiên và oracle. Trên dữ liệu demo, vài phút huấn luyện cho **0 % thành công — điều này là bình
 thường**; hãy xem cột `progress`.
 
+**Dùng thuật toán của bạn** (thuật toán RL khác, thư viện khác hoặc vòng lặp tự viết): observation,
+action, cách xử lý truncation, cách đánh giá và báo cáo kết quả, kèm mẫu PPO bằng PyTorch thuần
+(`examples/train_custom.py`): [Use your own algorithm](docs/features/own-algorithm.md).
+
 ## 4. Tạo map từ GLB — `build-map`
 
 ```bat
@@ -136,7 +141,7 @@ get-data / sim / train / build-map / extend-data / app (.bat, .sh)   các tính 
 setup.bat, setup.sh          tự cài / cập nhật .venv (.\setup.bat --all: cài tất cả)
 data/                        mọi thứ tải về hoặc tạo ra: data/datasets/<tên>, data/raw/glb, ...
 src/hm3denv/                 package Python (môi trường, giả lập, công cụ dataset)
-examples/                    quickstart.py, train_ppo.py, remote_client.py
+examples/                    quickstart.py, train_ppo.py, train_custom.py, remote_client.py
 docs/                        hướng dẫn (tiếng Anh)
 ```
 
