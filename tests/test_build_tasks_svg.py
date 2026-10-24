@@ -77,3 +77,16 @@ def test_sparse_candidates_do_not_crash():
     tasks, _, _ = sample_map(m, load_robot("turtlebot3_burger"), 8, np.random.default_rng(0),
                              1.0, 30.0, 1.0, 0.05)
     assert tasks
+
+
+def test_equal_quota_per_distance_bin():
+    # 8 x 5 m room with a partition: geodesics reach beyond 6 m, so 1-3 / 3-6 / 6-10 all fill
+    m = SvgMap(RINGS, {})
+    tasks, _, _ = sample_map(m, load_robot("turtlebot3_waffle_pi"), 12, np.random.default_rng(0),
+                             1.0, 30.0, 1.1, 0.05, dist_bins=[1, 3, 6, 10])
+    by_bin = {}
+    for t in tasks:
+        lo, hi = map(float, t["labels"]["dist_bin"].split("-"))
+        assert lo <= t["geodesic_m"] <= hi
+        by_bin[t["labels"]["dist_bin"]] = by_bin.get(t["labels"]["dist_bin"], 0) + 1
+    assert len(tasks) == 12 and by_bin == {"1-3": 4, "3-6": 4, "6-10": 4}

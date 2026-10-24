@@ -5,7 +5,8 @@ env, using each robot's real footprint and height class.
     theta, checked exactly with the footprint geometry against the map edges
   * goal: same connected component; geodesic in [min_geo, max_geo] m and
     GDR = geodesic / euclidean >= min_gdr (drops near-straight episodes)
-  * stratified: reachable geodesic distances split into 4 quantile bins, rotating
+  * stratified: equal quota of tasks per absolute geodesic distance bin (dist_bins, metres;
+    see distbins), instead of piling up at the short distances of each room
   * every pose is checked on the 3D mesh (verify.check_footprint): start with the real
     footprint at theta, goal with the polygon circumscribing the circumscribed circle
     (any heading); failures are resampled, every check goes to verify/<robot>.csv
@@ -26,10 +27,10 @@ from ..core.planning import MAX_ANISO_ERR, Planner
 from ..core.svgmap import SvgMap
 from ..dataset.writer import task_file
 from ..robots import Robot, footprint_polygon
+from . import distbins as DB
 from .verify import SVG_COLS, check_footprint, storey_probe, write_csv
 
 log = logging.getLogger(__name__)
-N_BINS = 4
 
 
 @dataclass
@@ -38,6 +39,7 @@ class SvgTaskParams:
     min_geo: float = 1.0         # geodesic range (m)
     max_geo: float = 30.0
     min_gdr: float = 1.1         # min geodesic / euclidean
+    dist_bins: tuple = DB.DEFAULT_DIST_BINS   # geodesic distance bins (m), equal quota each
     clearance: float = 0.05      # planning clearance added to the circumradius (m)
     success_radius: float = 0.2
     seed: int = 0
@@ -46,8 +48,15 @@ class SvgTaskParams:
 
 
 def sample_map(svgmap, robot, k, rng, min_geo, max_geo, min_gdr, clearance, check=None,
-               max_tries=None):
-    """(tasks, 3D checks, planner). check(poly_world, which) -> dict with 'ok'."""
+               max_tries=None, dist_bins=None):
+    """(tasks, 3D checks, planner). check(poly_world, which) -> dict with 'ok'.
+    Distances in [dist_bins[0], dist_bins[-1]] ∩ [min_geo, max_geo] are spread over the bins
+    with an equal quota each; a bin the map cannot fill is taken from the others."""
+    edges = DB.normalize(dist_bins)
+    nb = len(edges) - 1
+    strict, relaxed = DB.quotas(k, nb), [k] * nb
+    counts = [0] * nb
+    max_tries = max_tries or 40 * k
     col = Collider(svgmap)
     pl = Planner(svgmap, robot.r_circ, clearance)
     if not len(pl.cells):
@@ -55,7 +64,7 @@ def sample_map(svgmap, robot, k, rng, min_geo, max_geo, min_gdr, clearance, chec
     disk = footprint_polygon({"type": "circle", "radius": robot.r_circ})
     centers = np.array([pl.center(r, c) for r, c in pl.cells])
     tasks, checks, goal_ok = [], [], {}
-    for _ in range(max_tries or 40 * k):
+    for n_try in range(max_tries):
         if len(tasks) >= k:
             break
         i = int(rng.integers(len(pl.cells)))
@@ -73,17 +82,16 @@ def sample_map(svgmap, robot, k, rng, min_geo, max_geo, min_gdr, clearance, chec
         euc = np.hypot(centers[:, 0] - sx, centers[:, 1] - sy)
         with np.errstate(divide="ignore", invalid="ignore"):
             gdr = geo / euc
-        cand = np.where(np.isfinite(geo) & (geo >= min_geo) & (geo <= max_geo) & (gdr >= min_gdr))[0]
+        lo, hi = max(min_geo, edges[0]), min(max_geo, edges[-1])
+        cand = np.where(np.isfinite(geo) & (geo >= lo) & (geo <= hi) & (gdr >= min_gdr))[0]
         if not len(cand):
             continue
-        b = len(tasks) % N_BINS
-        lo, hi = np.quantile(geo[cand], [b / N_BINS, (b + 1) / N_BINS])
-        pool = cand[(geo[cand] >= lo) & (geo[cand] <= hi)]
-        if not len(pool):
-            # interpolated quantiles can fall between two real values: empty bin, take the
-            # candidate nearest the bin centre
-            pool = cand[[np.argmin(np.abs(geo[cand] - (lo + hi) / 2))]]
-        j = int(pool[rng.integers(len(pool))])
+        bidx = DB.bin_index(geo[cand], edges)
+        avail = np.bincount(bidx[bidx >= 0], minlength=nb)
+        b = DB.pick_bin(avail, counts, strict if n_try < max_tries // 2 else relaxed, rng)
+        if b is None:
+            continue
+        j = int(rng.choice(cand[bidx == b]))
         gx, gy = centers[j]
         if check is not None:
             if j not in goal_ok:
@@ -97,7 +105,8 @@ def sample_map(svgmap, robot, k, rng, min_geo, max_geo, min_gdr, clearance, chec
                       "goal": {"x": round(float(gx), 4), "y": round(float(gy), 4)},
                       "geodesic_m": round(float(geo[j]), 4),
                       "euclidean_m": round(float(euc[j]), 4),
-                      "labels": {"gdr": round(float(gdr[j]), 4)}})
+                      "labels": {"gdr": round(float(gdr[j]), 4), "dist_bin": DB.label(edges, b)}})
+        counts[b] += 1
     return tasks, checks, pl
 
 
@@ -136,7 +145,7 @@ def map_tasks(ws, root: Path, dataset: str, robot: Robot, splits: dict, p: SvgTa
     rng = np.random.default_rng([p.seed, zlib.crc32(f"{robot.id}/{map_id}".encode())])
     check = checker(ws, meta, robot) if p.verify else None
     tasks, checks, pl = sample_map(m, robot, p.k, rng, p.min_geo, p.max_geo, p.min_gdr,
-                                   p.clearance, check)
+                                   p.clearance, check, dist_bins=p.dist_bins)
     rows = check_rows(robot.id, map_id, checks)
     fail = (sum(not c[-1]["ok"] for c in checks) / len(checks)) if checks else 0.0
     flags = list(meta.get("flags", []))

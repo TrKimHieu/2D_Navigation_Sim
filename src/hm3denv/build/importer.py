@@ -106,7 +106,8 @@ def import_glbs(ws: Path, inputs, replace: bool = False) -> list[str]:
 
 
 def build_map(inputs, name: str = "my-maps", env: str = "svg", robots=None, up: str | None = None,
-              ws=None, replace: bool = False, preview: bool = True, verify: bool = True) -> tuple[Path, list[str]]:
+              ws=None, replace: bool = False, preview: bool = True, verify: bool = True,
+              dist_bins=None) -> tuple[Path, list[str]]:
     """Import GLBs and build (or extend) dataset `name`. Returns (dataset dir, new scenes)."""
     from .pipeline import build
     ws = paths.find_workspace(ws) if ws else paths.ensure_workspace()
@@ -118,6 +119,8 @@ def build_map(inputs, name: str = "my-maps", env: str = "svg", robots=None, up: 
         new = sorted(set(scenes) - dataset_scenes(Dataset(root)))
         if robots:
             log.warning("--robots is ignored when adding to an existing dataset (use hm3d extend --robots)")
+        if dist_bins:
+            log.warning("--dist-bins is ignored when adding to an existing dataset (it keeps its own config)")
         if not new:
             log.info("every scene is already in %s", name)
             return root, []
@@ -133,6 +136,11 @@ def build_map(inputs, name: str = "my-maps", env: str = "svg", robots=None, up: 
         if robots and len(robots) != 1:
             raise ValueError("a grid dataset is built for one robot: give one --robots")
         cfg["grid"] = {"robot": robots[0] if robots else "jetauto_pro"}
+    tasks = {}
     if not verify:
-        cfg["tasks"] = {"verify": False}
+        tasks["verify"] = False
+    if dist_bins:
+        tasks["dist_bins"] = [float(b) for b in dist_bins]
+    if tasks:
+        cfg["tasks"] = tasks
     return build(cfg, ws=ws, out=root, preview=preview), scenes

@@ -5,9 +5,9 @@
     discarded and resampled, every check is logged to verify/<robot>.csv
   * start -> goal in the same component, d_bfs in [d_min, budget - slack]
 
-Distance stratification: after drawing a start, the reachable distances are split into
-4 quantile bins and the target bin rotates, so every map gets easy to hard tasks
-instead of piling up around the mean distance.
+Distance stratification: equal quota of tasks per absolute distance bin (dist_bins, metres of
+path = d_bfs * cell size; see distbins), so every map gets short to long tasks instead of
+piling up around the mean distance, comparable between robots with different cells.
 
 Difficulty labels: p0 = sa_uniform (exact absorbing Markov chain),
 sa_persist (direction-keeping probe, repeat_p), starved/level from the thresholds in
@@ -27,10 +27,10 @@ import numpy as np
 
 from ..core.gridcore import Chain, bfs, cell_to_world, level_of
 from ..dataset.writer import task_file
+from . import distbins as DB
 from .verify import GRID_COLS, check_cell, write_csv
 
 log = logging.getLogger(__name__)
-N_BINS = 4
 
 
 @dataclass
@@ -39,6 +39,7 @@ class GridTaskParams:
     d_min: int = 8               # min d_bfs (steps)
     budget: int = 200            # episode step budget
     slack: int = 20              # d_max = budget - slack
+    dist_bins: tuple = DB.DEFAULT_DIST_BINS   # path distance bins (m), equal quota each
     repeat_p: float = 0.6        # sa_persist probe
     seed: int = 0
     flag_fail: float = 0.10      # flag maps whose mesh-check failure rate exceeds this
@@ -49,9 +50,15 @@ def map_rng(seed, map_id):
     return np.random.default_rng([seed, zlib.crc32(map_id.encode())])
 
 
-def sample_map(grid, main, k, d_min, d_max, budget, rng, check=None, repeat_p=0.6, max_tries=None):
+def sample_map(grid, main, k, d_min, d_max, budget, rng, check=None, repeat_p=0.6, max_tries=None,
+               cell_m=1.0, dist_bins=None):
     """(tasks, checks). `check(r, c)` -> dict with key `ok`; None skips the mesh checks
-    (tests only)."""
+    (tests only). d_bfs * cell_m is spread over `dist_bins` (metres) with an equal quota
+    each; a bin the map cannot fill is taken from the others."""
+    edges = DB.normalize(dist_bins)
+    nb = len(edges) - 1
+    strict, relaxed = DB.quotas(k, nb), [k] * nb
+    counts = [0] * nb
     free = grid == 0
     cand = np.argwhere(main)
     chain = Chain(free)
@@ -67,7 +74,7 @@ def sample_map(grid, main, k, d_min, d_max, budget, rng, check=None, repeat_p=0.
 
     tasks, seen = [], set()
     max_tries = max_tries or 50 * k
-    for _ in range(max_tries):
+    for n_try in range(max_tries):
         if len(tasks) >= k or not len(cand):
             break
         s = cand[rng.integers(len(cand))]
@@ -79,13 +86,12 @@ def sample_map(grid, main, k, d_min, d_max, budget, rng, check=None, repeat_p=0.
         if not len(cells):
             continue
         dv = dist[cells[:, 0], cells[:, 1]]
-        b = len(tasks) % N_BINS
-        lo, hi = np.quantile(dv, [b / N_BINS, (b + 1) / N_BINS])
-        pool = cells[(dv >= lo) & (dv <= hi)]
-        if not len(pool):
-            # interpolated quantiles can fall between two real values (few candidates):
-            # empty bin, take the candidate nearest the bin centre
-            pool = cells[[np.argmin(np.abs(dv - (lo + hi) / 2))]]
+        bidx = DB.bin_index(dv * cell_m, edges)
+        avail = np.bincount(bidx[bidx >= 0], minlength=nb)
+        b = DB.pick_bin(avail, counts, strict if n_try < max_tries // 2 else relaxed, rng)
+        if b is None:
+            continue
+        pool = cells[bidx == b]
         g = pool[rng.integers(len(pool))]
         key = (tuple(int(x) for x in s), tuple(int(x) for x in g))
         if key in seen or not ok(g):
@@ -97,11 +103,13 @@ def sample_map(grid, main, k, d_min, d_max, budget, rng, check=None, repeat_p=0.
         tasks.append({"start": list(key[0]), "goal": list(key[1]),
                       "d_bfs": int(dist[g[0], g[1]]), "p0": sa_u,
                       "sa_uniform": sa_u, "sa_persist": sa_p,
-                      "starved": bool(level_of(sa_u) == "starved"), "level": level_of(sa_u)})
+                      "starved": bool(level_of(sa_u) == "starved"), "level": level_of(sa_u),
+                      "dist_bin": DB.label(edges, b)})
+        counts[b] += 1
     return tasks, checked
 
 
-LABEL_KEYS = ("d_bfs", "p0", "sa_uniform", "sa_persist", "starved", "level")
+LABEL_KEYS = ("d_bfs", "p0", "sa_uniform", "sa_persist", "starved", "level", "dist_bin")
 
 
 def to_schema(i, t, meta) -> dict:
@@ -140,7 +148,8 @@ def map_tasks(ws, root: Path, dataset: str, robot: dict, splits: dict, p: GridTa
     z = np.load(root / "grids" / f"{map_id}.npz")
     check = checker(ws, meta, robot) if p.verify else None
     tasks, checked = sample_map(z["grid"], z["main"], p.k, p.d_min, p.budget - p.slack, p.budget,
-                                map_rng(p.seed, map_id), check, p.repeat_p)
+                                map_rng(p.seed, map_id), check, p.repeat_p,
+                                cell_m=meta["cell_m"], dist_bins=p.dist_bins)
     rows = check_rows(map_id, checked)
     n_chk = len(checked)
     fail = sum(not v["ok"] for v in checked.values()) / n_chk if n_chk else 0.0
