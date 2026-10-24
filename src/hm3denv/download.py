@@ -14,7 +14,7 @@ from pathlib import Path
 from . import paths
 from .dataset.schema import validate
 
-REPO_ID = "TranKimHieu/2D_Navigation_Sim"
+REPO_ID = "PhysicalSI/2D_Navigation_Sim"
 REPO_URL = f"https://huggingface.co/datasets/{REPO_ID}"
 
 

@@ -93,7 +93,7 @@ observation, action, truncation and evaluation details, and a plain-PyTorch temp
 |---|---|
 | `python` not found / wrong version | install Python 3.10–3.12 and tick *Add python.exe to PATH*; then run the command again |
 | `hm3d` / `python` can't find hm3denv | activate `.venv` first (see above), or use the `.bat` / `.sh` commands, which need no activation |
-| `get-data`: "you do not have access" | request access on the [dataset page](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim) and wait for the approval e-mail |
+| `get-data`: "you do not have access" | request access on the [dataset page](https://huggingface.co/datasets/PhysicalSI/2D_Navigation_Sim) and wait for the approval e-mail |
 | `get-data`: token invalid or expired | `hf auth login` with a new *Read* token from huggingface.co/settings/tokens |
 | `sim --serve`: "cannot listen" | another simulator uses the port: `--serve tcp://127.0.0.1:5556` |
 | a map from `build-map` looks wrong | check `data/datasets/<name>/preview`, fix the storey with `hm3d review`, run `build-map` again |

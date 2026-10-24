@@ -20,7 +20,7 @@ meant for trying the API, tests and debugging.
 ## Pre-built datasets (Hugging Face)
 
 Full datasets are hosted on Hugging Face:
-[**TranKimHieu/2D_Navigation_Sim**](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim).
+[**PhysicalSI/2D_Navigation_Sim**](https://huggingface.co/datasets/PhysicalSI/2D_Navigation_Sim).
 
 | Dataset | Environment | Source | Maps | Robots | Tasks |
 |---|---|---|---|---|---|
@@ -34,7 +34,7 @@ Access is gated and reviewed by hand; the HM3D-derived datasets are only shared 
 have been granted access to HM3D by Matterport.
 
 1. With a (free) Hugging Face account, request access with the form on the
-   [dataset page](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim) and wait for
+   [dataset page](https://huggingface.co/datasets/PhysicalSI/2D_Navigation_Sim) and wait for
    the approval.
 2. Run `get-data` ([guide](features/get-data.md)). It installs the download support, asks
    for a Hugging Face token once (create one with *Read* access at

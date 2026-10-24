@@ -62,7 +62,7 @@ Dữ liệu vào `data/datasets/<tên>` của repo và được kiểm tra sha25
 nơi (`sim`, `train`, `gym.make(..., dataset="<tên>")`), không cần di chuyển hay cấu hình.
 Lỗi được báo rõ ràng kèm mã thoát: 3 = không cài được `huggingface_hub`, 4 = chưa đăng nhập hoặc
 token sai/hết hạn (`hf auth login`), 5 = tài khoản chưa được cấp quyền (gửi yêu cầu trên
-[trang dataset](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim) và chờ duyệt),
+[trang dataset](https://huggingface.co/datasets/PhysicalSI/2D_Navigation_Sim) và chờ duyệt),
 6 = không kết nối được Hugging Face.
 
 ## 2. Mở giả lập — `sim`

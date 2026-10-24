@@ -25,7 +25,7 @@ already present are kept.
 ## Before the first download (once per account)
 
 1. Create a free account on <https://huggingface.co>.
-2. Request access on the [dataset page](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim)
+2. Request access on the [dataset page](https://huggingface.co/datasets/PhysicalSI/2D_Navigation_Sim)
    and wait for the approval e-mail. The HM3D-based datasets are only shared with people who
    have Matterport's HM3D licence.
 3. Create a token of type *Read* at <https://huggingface.co/settings/tokens>. `get-data` asks for
