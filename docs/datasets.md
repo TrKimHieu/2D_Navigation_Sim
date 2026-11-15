@@ -20,7 +20,7 @@ meant for trying the API, tests and debugging.
 ## Pre-built datasets (Hugging Face)
 
 Full datasets are hosted on Hugging Face:
-[**TranKimHieu/2D_Navigation_Sim**](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim).
+[**PhysicalSI/2D_Navigation_Sim**](https://huggingface.co/datasets/PhysicalSI/2D_Navigation_Sim).
 
 | Dataset | Environment | Source | Maps | Robots | Tasks |
 |---|---|---|---|---|---|
@@ -29,12 +29,30 @@ Full datasets are hosted on Hugging Face:
 | `svg-v1` | `HM3D/Svg-v0` | HM3D | 177 | all 9 | 30 835 |
 | `grid-jetauto-v1` | `HM3D/Grid-v0` | HM3D | 157 | `jetauto_pro` | 3 140 |
 | `grid-s15-v1` | `HM3D/Grid-v0` (15 cm cells) | HM3D | 166 | `s15_h63` | 3 320 |
+| `svg-v2` | `HM3D/Svg-v0` | HM3D | 143 | all 9 | 25 740 |
+| `grid-<robot>-v2` (×9) | `HM3D/Grid-v0` (cell = the robot's size) | HM3D | 80–151 | one each | 1 600–3 020 |
+
+The v2 datasets come from the 100 scenes of the HM3D val split, with one grid dataset per robot:
+`grid-agilex_limo-v2`, `grid-clearpath_jackal-v2`, `grid-jetauto_pro-v2`, `grid-kobuki-v2`,
+`grid-pal_tiago-v2`, `grid-turtlebot3_burger-v2`, `grid-turtlebot3_waffle_pi-v2`,
+`grid-turtlebot4-v2`, `grid-turtlebot4_lite-v2` (cells from 18 cm for the TurtleBot3 Burger to
+54 cm for TIAGo). Compared with v1:
+
+- every map has the same quota of tasks in each start-goal path distance bin (1-3, 3-6, 6-10,
+  10-15, 15-30 m, label `dist_bin`, see [Configuration reference](building-datasets.md#configuration-reference));
+- every map has exactly 20 tasks and no quality flag; `svg-v2` keeps only the 143 maps that
+  all 9 robots have, so the robots are compared on the same maps;
+- a scene is in the same split in every v2 dataset;
+- no `preview/` folder.
+
+Per-dataset numbers (maps, scenes per split, cell size): the
+[dataset page](https://huggingface.co/datasets/PhysicalSI/2D_Navigation_Sim) or `hm3d info NAME`.
 
 Access is gated and reviewed by hand; the HM3D-derived datasets are only shared with people who
 have been granted access to HM3D by Matterport.
 
 1. With a (free) Hugging Face account, request access with the form on the
-   [dataset page](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim) and wait for
+   [dataset page](https://huggingface.co/datasets/PhysicalSI/2D_Navigation_Sim) and wait for
    the approval.
 2. Run `get-data` ([guide](features/get-data.md)). It installs the download support, asks
    for a Hugging Face token once (create one with *Read* access at

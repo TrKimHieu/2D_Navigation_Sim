@@ -160,6 +160,8 @@ REAL_WS = Path(os.environ.get("HM3D_WORKSPACE") or next(
 
 
 @pytest.mark.workspace
+@pytest.mark.skip(reason="svg-v1 / grid-jetauto-v1 were built with the quantile sampler; tasks are "
+                         "now sampled in absolute distance bins (tasks.dist_bins)")
 @pytest.mark.skipif(not (REAL_WS / "datasets" / "grid-jetauto-v1").exists()
                     or not (REAL_WS / "raw" / "glb" / "00800-TEEsavR23oF.glb").exists(),
                     reason="real HM3D workspace (GLB + built datasets) not present")
@@ -180,3 +182,17 @@ def test_rebuild_matches_workspace_datasets(tmp_path):
     for r in s.robots:
         for m in s.maps(r):
             assert s.tasks(r, m) == ref.tasks(r, m)
+
+
+def test_split_of_a_scene_does_not_depend_on_scenes_without_maps():
+    from hm3denv.build.pipeline import _splits_stage
+
+    class St:                                    # runs every stage, no stamps
+        def run(self, name, family, params, inputs, fn, outputs):
+            return fn()
+    cfg = {"split": {"train": 0.7, "val": 0.15, "test": 0.15, "seed": 0}}
+    scenes = [f"{i:05d}-s{i}" for i in range(40)]
+    full = _splits_stage(St(), cfg, [f"{s}_s1" for s in scenes], scenes)
+    some = _splits_stage(St(), cfg, [f"{s}_s1" for s in scenes[3:30:2]], scenes)
+    where = {s: k for k, v in full.items() for s in v}
+    assert all(where[s] == k for k, v in some.items() for s in v)

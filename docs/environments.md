@@ -245,7 +245,9 @@ episode (1 on success, negative when the agent ended farther away than it starte
 
 Tasks are sampled with a detour (`min_gdr: 1.1`: geodesic ≥ 1.1 × straight line, the build
 default and the demo setting), so a policy has to learn to avoid obstacles from its LiDAR;
-turning to the goal and driving straight at it fails on every demo task. The default run
+turning to the goal and driving straight at it fails on every demo task. Datasets from v2 on
+also spread the tasks over start-goal distances (`labels.dist_bin`: `"1-3"` … `"15-30"` m), so
+`set_task_filter(dist_bin=["1-3", "3-6"])` gives a distance curriculum. The default run
 on the demo dataset (200 000 steps, ~5 min on 4 CPU cores) is a check of the pipeline: expect
 0 % success and a `progress` clearly above the random agent's (one run: PPO 19 %, random
 −2 %). For agents that reach goals, train on a full dataset for millions of steps. The script is short — copy it as a starting point for your

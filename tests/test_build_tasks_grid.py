@@ -53,3 +53,16 @@ def test_rejected_cells_never_used():
         for cell in (t["start"], t["goal"]):
             assert sum(cell) % 3 != 0
     assert any(not v["ok"] for v in checked.values())
+
+
+def test_equal_quota_per_distance_bin():
+    grid, main = grid_and_main()
+    cell_m = 0.5
+    tasks, _ = sample_map(grid, main, 12, 4, 180, 200, map_rng(0, "m"), cell_m=cell_m,
+                          dist_bins=[2, 6, 12, 40])
+    assert len(tasks) == 12
+    for t in tasks:
+        lo, hi = map(float, t["dist_bin"].split("-"))
+        assert lo <= t["d_bfs"] * cell_m <= hi
+    counts = {b: sum(t["dist_bin"] == b for t in tasks) for b in {t["dist_bin"] for t in tasks}}
+    assert max(counts.values()) - min(counts.values()) <= 4, counts

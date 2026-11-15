@@ -199,7 +199,7 @@ def _more_svg_tasks(ws, root, robot, splits, p, map_id, k, gen):
     rng = np.random.default_rng([p.seed, gen, zlib.crc32(f"{robot.id}/{map_id}".encode())])
     check = TS.checker(ws, m.meta, robot) if p.verify else None
     new, checks, _ = TS.sample_map(m, robot, k, rng, p.min_geo, p.max_geo, p.min_gdr,
-                                   p.clearance, check)
+                                   p.clearance, check, dist_bins=p.dist_bins)
 
     def key(t):
         return (t["start"]["x"], t["start"]["y"], t["goal"]["x"], t["goal"]["y"])
@@ -218,7 +218,8 @@ def _more_grid_tasks(ws, root, robot: dict, splits, p, map_id, k, gen):
     check = TG.checker(ws, meta, robot) if p.verify else None
     rng = np.random.default_rng([p.seed, gen, zlib.crc32(map_id.encode())])
     new, checked = TG.sample_map(z["grid"], z["main"], k, p.d_min, p.budget - p.slack, p.budget,
-                                 rng, check, p.repeat_p)
+                                 rng, check, p.repeat_p, cell_m=meta["cell_m"],
+                                 dist_bins=p.dist_bins)
     seen = {(tuple(t["start"]["cell"]), tuple(t["goal"]["cell"])) for t in d["tasks"]}
     add = [t for t in new if (tuple(t["start"]), tuple(t["goal"])) not in seen]
     n = len(d["tasks"])

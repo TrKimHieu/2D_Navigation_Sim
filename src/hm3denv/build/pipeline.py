@@ -289,11 +289,17 @@ def build(config, ws=None, out=None, force=(), preview=True) -> Path:
     return root
 
 
-def _splits_stage(st, cfg, map_ids):
+def _splits_stage(st, cfg, map_ids, all_scenes):
+    """Split by scene. Decided over every configured scene, then restricted to those with
+    maps, so a scene lands in the same split in every dataset built from the same scenes
+    (another robot's grid may lose a scene, the others must not shift)."""
     scenes = sorted({scene_of(m) for m in map_ids})
     s = cfg["split"]
-    return st.run("splits", "splits", s, scenes,
-                  lambda: assign_splits(scenes, {k: s[k] for k in ("train", "val", "test")}, s["seed"]),
+
+    def assign():
+        full = assign_splits(all_scenes, {k: s[k] for k in ("train", "val", "test")}, s["seed"])
+        return {k: [x for x in v if x in set(scenes)] for k, v in full.items()}
+    return st.run("splits", "splits", {**s, "basis": sorted(all_scenes)}, scenes, assign,
                   lambda: _hash(scenes))
 
 
@@ -308,8 +314,16 @@ def _build_grid(st, ws, root, cfg, scenes):
     made = st.run("gridify", "gridify", {**gp, "robot": robot}, {"slice": slice_out, "scenes": scenes},
                   lambda: sorted(G.run(ws, grids, robot, scenes, G.GridParams(**gp))),
                   lambda: _files_hash(grids.glob("*")))
-    splits = _splits_stage(st, cfg, made)
+    splits = _splits_stage(st, cfg, made, scenes)
     snapshot_robot(root, robot["id"], robot)
+    src = cfg["source"]
+    if src["type"] == ISB.TYPE:                 # labelled elements of the scenes, per cell
+        from . import scene_index as SI
+        st.run(f"scene_{robot['id']}", "scene", {"robot": robot["id"], "schema": SI.SCHEMA},
+               {"grids": st.stamps["gridify"]["outputs_hash"], "source": src,
+                "files": _files_hash(SI.input_files(src, made))},
+               lambda: SI.run(src, root, robot["id"], made),
+               lambda: _files_hash((root / "scene" / robot["id"]).glob("*.json")))
     per_map = st.run(f"tasks_{robot['id']}", "tasks", {**cfg["tasks"], "robot": robot},
                      {"grids": st.stamps["gridify"]["outputs_hash"], "splits": _hash(splits)},
                      lambda: TG.run(ws, root, cfg["name"], robot, splits, TG.GridTaskParams(**cfg["tasks"])),
@@ -359,7 +373,7 @@ def _build_svg(st, ws, root, cfg, scenes):
             for f in d.glob("*"):
                 f.unlink()
             d.rmdir()
-    splits = _splits_stage(st, cfg, [m for v in maps.values() for m in v])
+    splits = _splits_stage(st, cfg, [m for v in maps.values() for m in v], scenes)
     out = {}
     for r in robots:
         snapshot_robot(root, r.id, r.raw)

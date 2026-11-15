@@ -1,11 +1,16 @@
 """Source adapter: scenes built with Isaac-Scene-Builder -> storey maps of the slice stage.
 
 
-Input (Isaac-Scene-Builder ``output/``)::
+Input, either Isaac-Scene-Builder ``output/``::
 
     bev/<id>/<id>.pgm     3-level occupancy (ROS map_server): 254 free, 0 occupied, 205 outside
     bev/<id>/<id>.yaml    resolution, origin [x, y, 0] (ROS map frame: y = -editor y)
     manifest.jsonl        one JSON line per scene build (the last line of an id wins)
+
+or the ``scenes/`` folder of a version of the shared ISB_Nav_Dataset (its SCHEMA.md)::
+
+    <id>/<id>.pgm|.yaml|.csv   the same files, one folder per scene
+    index.json                 one row per scene (key "stem")
 
 Output: ``<workspace>/stages/slice/<prefix>-<id>/maps/storey0*`` in the format the slice
 stage writes, so vectorize / gridify / tasks / preview work unchanged, plus
@@ -13,6 +18,10 @@ stage writes, so vectorize / gridify / tasks / preview work unchanged, plus
 editor (x, y)): pixel (r, c) of the PGM has its centre at
 ``x = origin_x + (c + .5) res``, ``y = -origin_y - (H - r - .5) res``. Images are stored
 flipped vertically (row 0 = largest y), as the slice stage stores them.
+
+Since Isaac-Scene-Builder f08343f the PGM is written in the USD frame itself (first row =
+largest y, real origin; its .yaml starts with ``USD_FRAME_MARK``): it is used as is, with
+``lo = origin``. Older output keeps the flipped frame above.
 
 The BEV has no heights: every piece of furniture is an obstacle for every height class
 (conservative), and the whole scene is indoors (roofed).
@@ -39,6 +48,7 @@ SOURCE_KEYS = {"type", "path", "prefix", "geometry", "mesh_dir", "wall_m", "door
 META_KEYS = ("source", "level", "occlusion_density_target", "occlusion_density_actual",
              "n_furniture_placed", "traversable", "n_zones_actual", "n_doors", "grid",
              "legacy_id", "usd")
+USD_FRAME_MARK = "Map frame == the USD scene world frame"
 FRAME_NOTE = ("x, y = Isaac Sim USD world frame of the scene (Z up; Isaac-Scene-Builder "
               "editor coordinates); theta CCW from +x. The BEV .yaml uses the ROS map frame "
               "(y flipped).")
@@ -51,8 +61,9 @@ def check_source(src: dict) -> dict:
     if not src.get("path"):
         raise ValueError("source.path is required (the Isaac-Scene-Builder output directory)")
     root = Path(src["path"]).expanduser()
-    if not (root / "bev").is_dir():
-        raise FileNotFoundError(f"{root}: no bev/ directory (Isaac-Scene-Builder output expected)")
+    if not ((root / "bev").is_dir() or (root / "index.json").is_file()):
+        raise FileNotFoundError(f"{root}: no bev/ directory nor index.json (Isaac-Scene-Builder "
+                                "output or ISB_Nav_Dataset scenes/ expected)")
     prefix = str(src.get("prefix") or "isb")
     if "_s" in prefix or "/" in prefix or "\\" in prefix:
         raise ValueError(f"source.prefix {prefix!r} may not contain '_s' or path separators")
@@ -71,10 +82,20 @@ def check_source(src: dict) -> dict:
     return {"type": TYPE, "path": str(root.resolve()), "prefix": prefix, **out}
 
 
+def bev_dir(root: Path, scene_id: str) -> Path:
+    """Folder holding <id>.pgm|.yaml|.csv: bev/<id>/ (output/) or <id>/ (dataset scenes/)."""
+    root = Path(root)
+    return root / "bev" / scene_id if (root / "bev").is_dir() else root / scene_id
+
+
 def catalog(root: Path) -> dict[str, dict]:
-    """Scene metadata from manifest.jsonl (last line per scene id wins); {} if missing."""
+    """Scene metadata from manifest.jsonl (last line per scene id wins) or the dataset's
+    index.json; {} if missing."""
     out = {}
     mf = Path(root) / "manifest.jsonl"
+    ix = Path(root) / "index.json"
+    if not mf.exists() and ix.exists():
+        return {r["stem"]: r for r in json.loads(ix.read_text(encoding="utf-8"))}
     if mf.exists():
         for line in mf.read_text(encoding="utf-8").splitlines():
             if line.strip():
@@ -85,7 +106,7 @@ def catalog(root: Path) -> dict[str, dict]:
 
 def available(root: Path) -> list[str]:
     """Scene ids with a PGM and a YAML."""
-    bev = Path(root) / "bev"
+    bev = Path(root) / "bev" if (Path(root) / "bev").is_dir() else Path(root)
     return sorted(d.name for d in bev.iterdir()
                   if d.is_dir() and (d / f"{d.name}.pgm").exists() and (d / f"{d.name}.yaml").exists())
 
@@ -100,7 +121,7 @@ def resolve(src: dict, scenes) -> list[str]:
         return [s for s in have if s in cat] if cat else have
     missing = sorted(set(scenes) - set(have))
     if missing:
-        raise FileNotFoundError(f"scenes without a BEV .pgm/.yaml in {root / 'bev'}: {missing}")
+        raise FileNotFoundError(f"scenes without a BEV .pgm/.yaml in {root}: {missing}")
     return sorted(scenes)
 
 
@@ -110,13 +131,13 @@ def scene_name(src: dict, scene_id: str) -> str:
 
 def input_files(src: dict, ids) -> list[Path]:
     root = Path(src["path"])
-    files = [root / "bev" / i / f"{i}.{ext}" for i in ids for ext in ("pgm", "yaml")]
-    return files + ([root / "manifest.jsonl"] if (root / "manifest.jsonl").exists() else [])
+    files = [bev_dir(root, i) / f"{i}.{ext}" for i in ids for ext in ("pgm", "yaml")]
+    return files + [root / f for f in ("manifest.jsonl", "index.json") if (root / f).exists()]
 
 
 def read_bev(root: Path, scene_id: str):
     """(pgm array, resolution, origin_x, origin_y) of one scene."""
-    d = Path(root) / "bev" / scene_id
+    d = bev_dir(root, scene_id)
     info = yaml.safe_load((d / f"{scene_id}.yaml").read_text(encoding="utf-8"))
     img = np.asarray(Image.open(d / info.get("image", f"{scene_id}.pgm")))
     if img.ndim != 2:
@@ -127,6 +148,11 @@ def read_bev(root: Path, scene_id: str):
     return img, float(info["resolution"]), ox, oy
 
 
+def usd_frame(root: Path, scene_id: str) -> bool:
+    """True if the scene's BEV .yaml is in the USD world frame (newer Isaac-Scene-Builder)."""
+    return USD_FRAME_MARK in (bev_dir(root, scene_id) / f"{scene_id}.yaml").read_text(encoding="utf-8")
+
+
 def import_scene(ws: Path, src: dict, scene_id: str, htags, meta: dict | None = None) -> str:
     """Write the storey maps of one scene for the height tags `htags`; returns its name."""
     img, res, ox, oy = read_bev(Path(src["path"]), scene_id)
@@ -135,11 +161,12 @@ def import_scene(ws: Path, src: dict, scene_id: str, htags, meta: dict | None = 
     sdir = paths.slice_dir(ws) / name
     mdir = sdir / "maps"
     mdir.mkdir(parents=True, exist_ok=True)
-    flip = img[::-1]                                       # row 0 = largest y
+    usd = usd_frame(Path(src["path"]), scene_id)
+    flip = img if usd else img[::-1]                       # row 0 = largest y
     floor = np.where(flip != UNKNOWN, 255, 0).astype(np.uint8)
     obstacle = np.where(flip == OCC, 0, 255).astype(np.uint8)
     source = {"type": TYPE, "scene_id": scene_id,
-              "bev": str(Path(src["path"]) / "bev" / scene_id / f"{scene_id}.pgm"),
+              "bev": str(bev_dir(src["path"], scene_id) / f"{scene_id}.pgm"),
               **{k: (meta or {}).get(k) for k in META_KEYS if k in (meta or {})}}
     Image.fromarray(floor).save(mdir / "storey0_floor.png")
     for tag in htags:
@@ -147,7 +174,7 @@ def import_scene(ws: Path, src: dict, scene_id: str, htags, meta: dict | None = 
         Image.fromarray(floor).save(mdir / f"storey0_roof_{tag}.png")
     storey = {"scene": name, "storey": 0, "floor_z": 0.0, "ceil_z": None, "floor_margin": 0.05,
               "up": 2, "ua": 0, "va": 1, "res": res, "H": int(H), "W": int(W),
-              "lo": [ox, -oy - H * res, 0.0], "source": source, "frame_note": FRAME_NOTE}
+              "lo": [ox, oy if usd else -oy - H * res, 0.0], "source": source, "frame_note": FRAME_NOTE}
     (mdir / "storey0.json").write_text(json.dumps(storey, indent=1), encoding="utf-8")
     (sdir / "source.json").write_text(json.dumps(source, indent=1), encoding="utf-8")
     return name

@@ -26,8 +26,10 @@ What it does:
 4. samples tasks (start / goal pairs) and checks every start and goal on the 3D mesh;
 5. writes previews (`data/datasets/<name>/preview/`) and a manifest with sha256 hashes.
 
-These are the same steps and defaults as the published datasets: a scene of `svg-v1` built
-with `build-map` gives exactly its tasks.
+These are the same steps and defaults as the published v2 datasets (which then keep only the
+maps with 20 tasks and no flag). Tasks are spread evenly over start-goal distances of 1-3, 3-6,
+6-10, 10-15 and 15-30 m ([distance bins](../building-datasets.md#configuration-reference)); the
+v1 datasets were built with an earlier sampler, so a rebuild no longer gives their tasks.
 
 Running `build-map` again with the same `--name` **adds** the new scenes to the dataset (its
 maps, tasks and splits are kept, see [extend-data](extend-data.md)); scenes already in it are
@@ -40,6 +42,7 @@ skipped.
 | `--robots ID ...` | SVG: these robots (default all 9, [list](../robots.md)); grid: the robot whose size sets the cells (default `jetauto_pro`) |
 | `--up x \| y \| z` | up axis of the meshes, if the detection gets it wrong |
 | `--replace` | a different GLB with the same scene name is already there: replace it |
+| `--dist-bins M ...` | start-goal distance bin edges in metres, the same number of tasks in each (default `1 3 6 10 15 30`) |
 | `--no-preview`, `--no-verify` | skip the preview images / the 3D checks of the tasks (faster) |
 | `--review` | open the storey review tool at the end |
 

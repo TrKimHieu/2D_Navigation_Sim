@@ -1,0 +1,283 @@
+{
+ "schema_version": "1.0",
+ "id": "clearpath_husky",
+ "name": "Clearpath Husky A200 UGV",
+ "footprint": {
+  "type": "polygon",
+  "points": [
+   [
+    -0.0817,
+    -0.3346
+   ],
+   [
+    -0.0797,
+    -0.3326
+   ],
+   [
+    -0.0807,
+    -0.3046
+   ],
+   [
+    -0.0797,
+    -0.2996
+   ],
+   [
+    -0.0767,
+    -0.2976
+   ],
+   [
+    0.0763,
+    -0.2976
+   ],
+   [
+    0.0803,
+    -0.3006
+   ],
+   [
+    0.0813,
+    -0.3066
+   ],
+   [
+    0.0813,
+    -0.3346
+   ],
+   [
+    0.4303,
+    -0.3346
+   ],
+   [
+    0.4323,
+    -0.3326
+   ],
+   [
+    0.4313,
+    -0.3046
+   ],
+   [
+    0.4333,
+    -0.2956
+   ],
+   [
+    0.4333,
+    -0.2556
+   ],
+   [
+    0.4363,
+    -0.2536
+   ],
+   [
+    0.4533,
+    -0.2666
+   ],
+   [
+    0.4833,
+    -0.2286
+   ],
+   [
+    0.4893,
+    -0.2146
+   ],
+   [
+    0.4923,
+    -0.2006
+   ],
+   [
+    0.4923,
+    0.2004
+   ],
+   [
+    0.4903,
+    0.2114
+   ],
+   [
+    0.4833,
+    0.2284
+   ],
+   [
+    0.4703,
+    0.2474
+   ],
+   [
+    0.4533,
+    0.2674
+   ],
+   [
+    0.4353,
+    0.2524
+   ],
+   [
+    0.4323,
+    0.2544
+   ],
+   [
+    0.4323,
+    0.3344
+   ],
+   [
+    0.0803,
+    0.3344
+   ],
+   [
+    0.0783,
+    0.3264
+   ],
+   [
+    0.0783,
+    0.2944
+   ],
+   [
+    0.0753,
+    0.2924
+   ],
+   [
+    -0.0757,
+    0.2924
+   ],
+   [
+    -0.0787,
+    0.2944
+   ],
+   [
+    -0.0797,
+    0.3344
+   ],
+   [
+    -0.4317,
+    0.3344
+   ],
+   [
+    -0.4337,
+    0.3264
+   ],
+   [
+    -0.4327,
+    0.2554
+   ],
+   [
+    -0.4357,
+    0.2534
+   ],
+   [
+    -0.4527,
+    0.2674
+   ],
+   [
+    -0.4787,
+    0.2364
+   ],
+   [
+    -0.4877,
+    0.2174
+   ],
+   [
+    -0.4927,
+    0.1984
+   ],
+   [
+    -0.4927,
+    -0.1986
+   ],
+   [
+    -0.4877,
+    -0.2176
+   ],
+   [
+    -0.4787,
+    -0.2356
+   ],
+   [
+    -0.4527,
+    -0.2666
+   ],
+   [
+    -0.4407,
+    -0.2566
+   ],
+   [
+    -0.4367,
+    -0.2546
+   ],
+   [
+    -0.4337,
+    -0.2566
+   ],
+   [
+    -0.4337,
+    -0.2936
+   ],
+   [
+    -0.4307,
+    -0.3066
+   ],
+   [
+    -0.4317,
+    -0.3336
+   ]
+  ]
+ },
+ "height": 0.39,
+ "height_class": "h63",
+ "drive": "differential",
+ "limits": {
+  "v_max": 1.0,
+  "v_min": -1.0,
+  "vy_max": 0.0,
+  "w_max": 1.0
+ },
+ "lidar": {
+  "model": "SICK LMS111",
+  "range_min": 0.5,
+  "range_max": 20.0,
+  "fov": 4.7124,
+  "beams": 270
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://github.com/husky/husky/blob/noetic-devel/husky_description/urdf/husky.urdf.xacro",
+   "method": "all URDF visual geometry (joints = 0) projected onto the floor of frame 'base_link' at 1 mm, outer contour, simplified by 1 mm (hm3d robots import-urdf)"
+  },
+  "height": {
+   "kind": "official",
+   "url": "https://clearpathrobotics.com/husky-spec-comparison/",
+   "note": "A200: 390 mm, without sensor arch"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://clearpathrobotics.com/husky-spec-comparison/",
+   "note": "A200: 1.0 m/s"
+  },
+  "limits.v_min": {
+   "kind": "estimated",
+   "method": "The manufacturer only publishes the maximum speed; the maximum reverse speed is assumed equal to it."
+  },
+  "limits.vy_max": {
+   "kind": "official",
+   "url": "https://clearpathrobotics.com/husky-spec-comparison/",
+   "note": "skid-steer, modelled as differential drive"
+  },
+  "limits.w_max": {
+   "kind": "estimated",
+   "method": "The manufacturer does not publish the maximum angular velocity; a conservative 1.0 rad/s is used, in line with TurtleBot3 Waffle Pi (1.82) and TurtleBot 4 (1.90). The kinematic bound 2*v_max/track width is not used because it far exceeds the practical safe limit."
+  },
+  "lidar": {
+   "kind": "official",
+   "url": "https://github.com/husky/husky/blob/noetic-devel/husky_description/urdf/husky.urdf.xacro",
+   "note": "the URDF's front laser option is a SICK LMS1xx (HUSKY_LMS1XX_ENABLED); LMS111: 0.5-20 m, 270 degrees"
+  },
+  "lidar.beams": {
+   "kind": "estimated",
+   "method": "1 beam per degree, close to the ~1 degree angular resolution of low-cost 2D LiDARs; the environment resamples to n_beams beams."
+  },
+  "footprint_simple": {
+   "kind": "official",
+   "url": "https://clearpathrobotics.com/husky-spec-comparison/",
+   "note": "A200: 990 x 670 x 390 mm"
+  }
+ },
+ "footprint_simple": {
+  "type": "rectangle",
+  "length": 0.99,
+  "width": 0.67
+ }
+}

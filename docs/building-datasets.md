@@ -99,6 +99,11 @@ robots: all
 - **Map coordinates are the USD world coordinates of the scene** (Z up), so starts, goals and
   poses can be used directly in Isaac Sim. (The BEV `.yaml` follows the ROS convention, with y
   flipped; hm3denv handles it.)
+- `path` may also be the `scenes/` folder of a version of the shared `ISB_Nav_Dataset`
+  (`<stem>/<stem>.pgm|.yaml|...` + `index.json`). Grid datasets from it also get
+  `scene/<robot>/<map_id>.json`: the rooms, walls, doors and objects of the scene's
+  `<stem>_objects.json` on the cells of that grid, with the cell <-> metre frame
+  (`hm3denv.build.scene_index`, read by navsim's `env.unwrapped.scene()`).
 - The BEV has no heights: every piece of furniture blocks every robot. There is no 3D mesh to
   check against, so the manifest records `source.verified_3d: false`.
 
@@ -110,19 +115,34 @@ env: svg                       # svg | grid
 source: {type: hm3d}           # or isaac_scene_builder (above)
 scenes: all                    # or a list of scene ids
 exclude: []                    # scenes to leave out
-split: {train: 0.7, val: 0.15, test: 0.15, seed: 0}   # by scene
+split: {train: 0.7, val: 0.15, test: 0.15, seed: 0}   # by scene, over every configured scene
 slice: {res: 0.02, step: 0.1, floor_margin: 0.05, ceil_margin: 0.1, min_storey_m: 1.8}
 # env: svg
 robots: all                    # or a list of presets
 height_classes: {h36: 0.36, h63: 0.626, h145: 1.45}
 map: {epsilon_px: 0.5, min_iou: 0.98, min_free_m2: 2.0}
-tasks: {k: 20, min_geo: 1.0, max_geo: 30.0, min_gdr: 1.1, clearance: 0.05, success_radius: 0.2, seed: 0}
+tasks: {k: 20, min_geo: 1.0, max_geo: 30.0, min_gdr: 1.1, clearance: 0.05, success_radius: 0.2,
+        dist_bins: [1, 3, 6, 10, 15, 30], seed: 0}
 # env: grid
 grid: {robot: jetauto_pro, robot_size: null, margin: 0.04, floor_cover: 0.9, roof: true}
-tasks: {k: 20, d_min: 8, budget: 200, slack: 20, seed: 0}
+tasks: {k: 20, d_min: 8, budget: 200, slack: 20, dist_bins: [1, 3, 6, 10, 15, 30], seed: 0}
 ```
 
 Unknown keys are errors, so a typo never silently falls back to a default.
+
+**Distance bins.** `tasks.dist_bins` are start-goal path distances in metres (geodesic for svg,
+`d_bfs` × cell size for grid). Each map gets the same quota of its `k` tasks in every bin (20
+tasks, 5 bins: 4 each), so short and long trips are equally common instead of piling up at the
+size of each room; every task is labelled with its bin (`labels.dist_bin`, e.g. `"6-10"`). A
+bin a map cannot fill (a small flat has no 15 m path) is filled from the bins it can, so long
+distances stay rarer over a whole dataset. Grid tasks also keep `d_min` steps: with large cells
+(TIAGo, 54 cm) the first bin can stay empty. `build-map --dist-bins 1 3 6 10 15 30` sets the
+same thing. Datasets up to v1 were built with the earlier sampler (4 quantile bins of the
+distances reachable from each start).
+
+**Splits** are decided over every scene of the configuration, then restricted to the scenes
+that have maps, so a scene is in the same split in every dataset built from the same scenes,
+even when a robot loses some of them (a storey too small for its cells).
 
 ## Checks
 

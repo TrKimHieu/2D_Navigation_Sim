@@ -25,7 +25,7 @@ already present are kept.
 ## Before the first download (once per account)
 
 1. Create a free account on <https://huggingface.co>.
-2. Request access on the [dataset page](https://huggingface.co/datasets/TranKimHieu/2D_Navigation_Sim)
+2. Request access on the [dataset page](https://huggingface.co/datasets/PhysicalSI/2D_Navigation_Sim)
    and wait for the approval e-mail. The HM3D-based datasets are only shared with people who
    have Matterport's HM3D licence.
 3. Create a token of type *Read* at <https://huggingface.co/settings/tokens>. `get-data` asks for
@@ -52,6 +52,11 @@ Every problem stops the command with an explanation and a distinct exit code (fo
 | `svg-v1` | `HM3D/Svg-v0` | HM3D | 177 | all 9 | 30 835 |
 | `grid-jetauto-v1` | `HM3D/Grid-v0` | HM3D | 157 | `jetauto_pro` | 3 140 |
 | `grid-s15-v1` | `HM3D/Grid-v0` (15 cm cells) | HM3D | 166 | `s15_h63` | 3 320 |
+| `svg-v2` | `HM3D/Svg-v0` | HM3D | 143 | all 9 | 25 740 |
+| `grid-<robot>-v2` (×9) | `HM3D/Grid-v0` (cell = the robot's size) | HM3D | 80–151 | one each | 1 600–3 020 |
+
+The v2 datasets spread tasks evenly over start-goal distances and keep only clean maps, see
+[Datasets](../datasets.md#pre-built-datasets-hugging-face).
 
 More about the datasets, their format and where they are searched: [Datasets](../datasets.md).
 To add scenes, tasks or robots to a downloaded dataset: [extend-data](extend-data.md).

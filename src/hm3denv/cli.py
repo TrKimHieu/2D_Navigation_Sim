@@ -375,7 +375,8 @@ def cmd_build_map(args):
     from .dataset import Dataset
     root, scenes = build_map(args.inputs, name=args.name, env=args.env, robots=args.robots,
                              up=args.up, ws=args.workspace, replace=args.replace,
-                             preview=not args.no_preview, verify=not args.no_verify)
+                             preview=not args.no_preview, verify=not args.no_verify,
+                             dist_bins=args.dist_bins)
     ds = Dataset(root)
     print(f"\n{ds.name} ({ds.env_type}): {len(scenes)} new scene(s) -> {root}")
     for r, v in sorted(ds.manifest["robots"].items()):
@@ -588,7 +589,7 @@ def parser():
     s = sub.add_parser("build", help="build a dataset from a config file")
     s.add_argument("config")
     s.add_argument("--force", nargs="*", metavar="STAGE",
-                   help="re-run stages: slice gridify vectorize splits tasks (and what follows)")
+                   help="re-run stages: slice gridify vectorize splits scene tasks (and what follows)")
     s.add_argument("--out", help="dataset directory (default: <workspace>/datasets/<name>)")
     s.add_argument("--no-preview", action="store_true")
     s.set_defaults(fn=cmd_build)
@@ -607,6 +608,9 @@ def parser():
     s.add_argument("--replace", action="store_true", help="replace a different GLB of the same name")
     s.add_argument("--no-preview", action="store_true", help="skip the preview images (faster)")
     s.add_argument("--no-verify", action="store_true", help="skip the 3D mesh checks of the tasks (faster)")
+    s.add_argument("--dist-bins", nargs="+", type=float, metavar="M",
+                   help="start-goal distance bin edges in metres, equal quota of tasks per bin "
+                        "(default: 1 3 6 10 15 30)")
     s.add_argument("--review", action="store_true", help="open the storey review tool at the end")
     s.set_defaults(fn=cmd_build_map)
 
