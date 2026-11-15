@@ -92,7 +92,7 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-HASHED_DIRS = ("maps", "grids", "tasks", "robots")
+HASHED_DIRS = ("maps", "grids", "tasks", "robots", "scene")
 
 
 def file_hashes(root: Path) -> dict[str, str]:

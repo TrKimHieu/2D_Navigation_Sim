@@ -316,6 +316,14 @@ def _build_grid(st, ws, root, cfg, scenes):
                   lambda: _files_hash(grids.glob("*")))
     splits = _splits_stage(st, cfg, made, scenes)
     snapshot_robot(root, robot["id"], robot)
+    src = cfg["source"]
+    if src["type"] == ISB.TYPE:                 # labelled elements of the scenes, per cell
+        from . import scene_index as SI
+        st.run(f"scene_{robot['id']}", "scene", {"robot": robot["id"], "schema": SI.SCHEMA},
+               {"grids": st.stamps["gridify"]["outputs_hash"], "source": src,
+                "files": _files_hash(SI.input_files(src, made))},
+               lambda: SI.run(src, root, robot["id"], made),
+               lambda: _files_hash((root / "scene" / robot["id"]).glob("*.json")))
     per_map = st.run(f"tasks_{robot['id']}", "tasks", {**cfg["tasks"], "robot": robot},
                      {"grids": st.stamps["gridify"]["outputs_hash"], "splits": _hash(splits)},
                      lambda: TG.run(ws, root, cfg["name"], robot, splits, TG.GridTaskParams(**cfg["tasks"])),

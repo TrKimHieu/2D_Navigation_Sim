@@ -589,7 +589,7 @@ def parser():
     s = sub.add_parser("build", help="build a dataset from a config file")
     s.add_argument("config")
     s.add_argument("--force", nargs="*", metavar="STAGE",
-                   help="re-run stages: slice gridify vectorize splits tasks (and what follows)")
+                   help="re-run stages: slice gridify vectorize splits scene tasks (and what follows)")
     s.add_argument("--out", help="dataset directory (default: <workspace>/datasets/<name>)")
     s.add_argument("--no-preview", action="store_true")
     s.set_defaults(fn=cmd_build)
