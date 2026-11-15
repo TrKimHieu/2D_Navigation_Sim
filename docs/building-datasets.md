@@ -99,6 +99,11 @@ robots: all
 - **Map coordinates are the USD world coordinates of the scene** (Z up), so starts, goals and
   poses can be used directly in Isaac Sim. (The BEV `.yaml` follows the ROS convention, with y
   flipped; hm3denv handles it.)
+- `path` may also be the `scenes/` folder of a version of the shared `ISB_Nav_Dataset`
+  (`<stem>/<stem>.pgm|.yaml|...` + `index.json`). Grid datasets from it also get
+  `scene/<robot>/<map_id>.json`: the rooms, walls, doors and objects of the scene's
+  `<stem>_objects.json` on the cells of that grid, with the cell <-> metre frame
+  (`hm3denv.build.scene_index`, read by navsim's `env.unwrapped.scene()`).
 - The BEV has no heights: every piece of furniture blocks every robot. There is no 3D mesh to
   check against, so the manifest records `source.verified_3d: false`.
 

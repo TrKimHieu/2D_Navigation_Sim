@@ -166,3 +166,90 @@ def test_verify_refuses_imported_dataset(isb, capsys):
     root = build(config(out), ws=ws, preview=False)
     assert main(["verify", str(root)]) == 2
     assert "no 3D mesh" in capsys.readouterr().err
+
+
+# ------------------------------------------------------------------ ISB_Nav_Dataset scenes/
+
+M = 0.2                                                 # margin of the newer scene builder (m)
+
+
+def write_dataset_scene(root, sid, box=BOX):
+    """A scene folder of ISB_Nav_Dataset/<version>/scenes/: PGM in the USD frame (first row
+    = largest y, origin = real lower-left corner), objects.json and the 16-bit id raster
+    (rows grow with +y) with the walls as element 1 and the box as element 10."""
+    d = root / sid
+    d.mkdir(parents=True, exist_ok=True)
+    W = round((2 * M + ROOM_W) / RES)
+    H = round((2 * M + ROOM_H) / RES)
+    x = (np.arange(W) + 0.5) * RES - M
+    y = (np.arange(H) + 0.5) * RES - M
+    X, Y = np.meshgrid(x, y)                            # row r <-> y, growing upwards
+    inside = (X >= 0) & (X <= ROOM_W) & (Y >= 0) & (Y <= ROOM_H)
+    wall = inside & ((X < 0.1) | (X > ROOM_W - 0.1) | (Y < 0.1) | (Y > ROOM_H - 0.1))
+    x0, x1, y0, y1 = box
+    obj = (X >= x0) & (X <= x1) & (Y >= y0) & (Y <= y1)
+    img = np.full((H, W), ISB.UNKNOWN, np.uint8)
+    img[inside] = ISB.FREE
+    img[wall | obj] = ISB.OCC
+    Image.fromarray(img[::-1]).save(d / f"{sid}.pgm")
+    (d / f"{sid}.yaml").write_text(
+        f"# BEV map for ROS map_server. {ISB.USD_FRAME_MARK} (x, y).\nimage: {sid}.pgm\n"
+        f"resolution: {RES:.6f}\norigin: [{-M:.4f}, {-M:.4f}, 0.0]\nnegate: 0\n"
+        "occupied_thresh: 0.65\nfree_thresh: 0.196\n", encoding="utf-8")
+    ids = np.zeros((H, W), np.uint16)
+    ids[wall] = 1
+    ids[obj] = 10
+    Image.fromarray(ids).save(d / f"{sid}_ids.png")
+    room = [[0, 0], [ROOM_W, 0], [ROOM_W, ROOM_H], [0, ROOM_H]]
+    objs = {"schema": "isaac-scene-builder.objects/1", "size_m": [ROOM_W, ROOM_H],
+            "generator": {"theme": "office", "layout": "open", "complexity": 0},
+            "rooms": [{"id": "room0", "type": "office", "area_m2": ROOM_W * ROOM_H,
+                       "outline": [room]}],
+            "walls": [{"id": 1, "class": "wall", "start": [0, 0], "end": [ROOM_W, 0],
+                       "thickness": 0.2, "faces": {"left": ["room0"], "right": []}}],
+            "openings": [],
+            "objects": [{"id": 10, "label": "table", "name": "Desk", "asset": "SM_Desk",
+                         "room": "room0", "pose": {"x": (x0 + x1) / 2, "y": (y0 + y1) / 2,
+                                                   "yaw_deg": 0.0},
+                         "size": [x1 - x0, y1 - y0], "height": 0.75}],
+            "raster": {"file": f"{sid}_ids.png", "resolution_m": RES, "origin_m": [-M, -M],
+                       "width": W, "height": H}}
+    (d / f"{sid}_objects.json").write_text(json.dumps(objs), encoding="utf-8")
+
+
+def test_dataset_scenes_layout_frame_and_scene_index(tmp_path):
+    from hm3denv.build import scene_index as SI
+    scenes = tmp_path / "ISB_Nav_Dataset" / "v" / "scenes"
+    write_dataset_scene(scenes, "v_s06_000")
+    write_dataset_scene(scenes, "v_s06_001", box=(1.0, 1.8, 2.5, 3.2))
+    (scenes / "index.json").write_text(json.dumps([{"stem": "v_s06_000"}, {"stem": "v_s06_001"}]),
+                                       encoding="utf-8")
+    ws = tmp_path / "ws"
+    assert main(["init", str(ws)]) == 0
+    root = build(config(scenes, env="grid"), ws=ws, preview=False)
+    ds = load_dataset(root)
+    assert ds.validate() == []
+    assert sorted(ds.maps(ds.robots[0])) == ["isb-v_s06_000_s0", "isb-v_s06_001_s0"]
+    m = "isb-v_s06_000_s0"
+    sc = json.loads((root / "scene" / ds.robots[0] / f"{m}.json").read_text(encoding="utf-8"))
+    assert sc["schema"] == SI.SCHEMA and sc["source"]["scene_id"] == "v_s06_000"
+    grid = np.load(root / "grids" / f"{m}.npz")["grid"]
+    fr = sc["frame"]
+    # every task end point: metres == frame(cell), inside the room, in the USD frame
+    for t in json.loads((root / "tasks" / ds.robots[0] / f"{m}.json").read_text())["tasks"]:
+        for e in (t["start"], t["goal"]):
+            r, c = e["cell"]
+            assert abs(fr["x0"] + c * fr["cell_m"] - e["x"]) < 1e-6
+            assert abs(fr["y0"] - r * fr["cell_m"] - e["y"]) < 1e-6
+            assert 0 < e["x"] < ROOM_W and 0 < e["y"] < ROOM_H
+    # the desk: its cells are blocked, around its pose, not mirrored (y-flip bug: y = 3.0)
+    desk = next(o for o in sc["objects"] if o["id"] == 10)
+    assert desk["label"] == "table" and desk["n_cells"] > 0
+    assert all(grid[r, c] != 0 for r, c in desk["cells_rc"])
+    r, c = SI.world_to_cell(fr, 4.3, 1.0)
+    assert [r, c] in desk["cells_rc"] and desk["center_rc"] == [r, c]
+    assert SI.world_to_cell(fr, 4.3, 3.0) not in {tuple(x) for x in desk["cells_rc"]}
+    assert set(desk["shape"]) <= {"#", ".", "/"} and desk["size"][0] * desk["size"][1] >= desk["n_cells"]
+    assert sc["counts"]["labelled_free_cells"] == 0
+    assert sc["rooms"][0]["objects"] == [10] and sc["rooms"][0]["free_cells"] > 0
+    assert any(w["cells_rc"] for w in sc["walls"])

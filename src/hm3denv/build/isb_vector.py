@@ -185,7 +185,7 @@ def compare_to_bev(free, root: Path, scene_id: str) -> dict:
 def scene_map(src: dict, scene_id: str, hclass: str, height: float,
               meta_src: dict | None = None) -> tuple[SvgMap, dict]:
     root = Path(src["path"])
-    csv_path = root / "bev" / scene_id / f"{scene_id}.csv"
+    csv_path = ISB.bev_dir(root, scene_id) / f"{scene_id}.csv"
     key = (str(csv_path), csv_path.stat().st_mtime_ns, tuple(sorted(
         (k, str(src[k])) for k in DEFAULTS)))
     if key not in _scenes:
@@ -211,7 +211,7 @@ def scene_map(src: dict, scene_id: str, hclass: str, height: float,
         "flags": flags,
         "provenance": {"tool": "hm3denv.build.isb_vector", "created": time.strftime("%Y-%m-%d %H:%M"),
                        "sources": [str(csv_path), str(Path(src["mesh_dir"])),
-                                   str(root / "bev" / scene_id / f"{scene_id}.pgm")]},
+                                   str(ISB.bev_dir(root, scene_id) / f"{scene_id}.pgm")]},
         "source": {"type": ISB.TYPE, "scene_id": scene_id,
                    **{k: (meta_src or {}).get(k) for k in ISB.META_KEYS if k in (meta_src or {})}},
     }
@@ -244,6 +244,6 @@ def run(src: dict, out_dir: Path, hclass: str, height: float, scene_ids,
 
 def input_files(src: dict, scene_ids) -> list[Path]:
     root = Path(src["path"])
-    files = [root / "bev" / i / f"{i}.{ext}" for i in scene_ids for ext in ("csv", "pgm", "yaml")]
+    files = [ISB.bev_dir(root, i) / f"{i}.{ext}" for i in scene_ids for ext in ("csv", "pgm", "yaml")]
     mesh = Path(src["mesh_dir"])
     return files + (sorted(mesh.glob("*.png")) if mesh.exists() else [])
