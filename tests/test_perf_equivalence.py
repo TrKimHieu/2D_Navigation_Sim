@@ -42,8 +42,10 @@ def random_poses(rng, n):
 def test_pose_valid_matches_exact_test(robot):
     """Broad phase + numba kernel == the original exact test, for every robot footprint
     (several are concave URDF sections) on poses that often graze obstacles."""
-    fp = load_robot(robot).footprint
-    col = Collider(cluttered())
+    r = load_robot(robot)
+    fp = r.footprint
+    # a 1 m robot (Husky, Ridgeback) barely fits among 30 obstacles in a 4 x 3 m room
+    col = Collider(cluttered(n_holes=30 if r.r_circ < 0.4 else 8))
     rng = np.random.default_rng(len(robot))
     n_valid = 0
     for x, y, th in random_poses(rng, 1500):

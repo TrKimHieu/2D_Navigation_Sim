@@ -35,6 +35,9 @@ PACKAGES = {
                               "irobot_create_common/irobot_create_control"),
     "kobuki_description": ("kobuki-base/kobuki_ros", "devel", "kobuki_description"),
     "jackal_description": ("jackal/jackal", "noetic-devel", "jackal_description"),
+    "husky_description": ("husky/husky", "noetic-devel", "husky_description"),
+    "ridgeback_description": ("ridgeback/ridgeback", "melodic-devel", "ridgeback_description"),
+    "dingo_description": ("dingo-cpr/dingo", "noetic-devel", "dingo_description"),
     "limo_description": ("agilexrobotics/limo_ros", "master", "limo_description"),
     "pmb2_description": ("pal-robotics/pmb2_robot", "humble-devel", "pmb2_description"),
     "tiago_description": ("pal-robotics/tiago_robot", "humble-devel", "tiago_description"),
@@ -51,6 +54,11 @@ MODELS = {
     "turtlebot4_lite": {"entry": "turtlebot4_description/urdf/lite/turtlebot4.urdf.xacro"},
     "kobuki": {"entry": "kobuki_description/urdf/kobuki_standalone.urdf.xacro"},
     "clearpath_jackal": {"entry": "jackal_description/urdf/jackal.urdf.xacro"},
+    # default accessories (Husky: bumpers + top plate, no sensor arch; Dingo: the -D
+    # version, DINGO_OMNI unset)
+    "clearpath_husky": {"entry": "husky_description/urdf/husky.urdf.xacro"},
+    "clearpath_ridgeback": {"entry": "ridgeback_description/urdf/ridgeback.urdf.xacro"},
+    "clearpath_dingo": {"entry": "dingo_description/urdf/dingo.urdf.xacro"},
     "agilex_limo": {"entry": "limo_description/urdf/limo_four_diff.xacro",
                     "args": {"robot_namespace": "/"}},
     # arm in PAL's "home" pose (last waypoint of tiago_bringup/config/motions/

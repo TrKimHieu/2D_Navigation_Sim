@@ -5,7 +5,10 @@
 | Preset | Drive | v max (m/s) | ω max (rad/s) | Height (m) | LiDAR FOV / range |
 |---|---|---|---|---|---|
 | `agilex_limo` | differential | 1.0 | 1.0 | 0.25 | 360° / 8 m |
+| `clearpath_dingo` | differential | 1.3 | 1.0 | 0.11 | 360° / 12 m |
+| `clearpath_husky` | differential | 1.0 | 1.0 | 0.39 | 270° / 20 m |
 | `clearpath_jackal` | differential | 2.0 | 1.0 | 0.25 | 360° / 12 m |
+| `clearpath_ridgeback` | omnidirectional | 1.1 | 1.0 | 0.31 | 270° / 10 m |
 | `jetauto_pro` | omnidirectional | 0.6 | 1.0 | 0.63 | 360° / 12 m |
 | `kobuki` | differential | 0.7 | 3.14 | 0.12 | 360° / 12 m |
 | `pal_tiago` | differential | 1.0 | 1.0 | 1.45 | 270° / 10 m |
@@ -20,8 +23,9 @@ see [which dataset has which robots](datasets.md) or run
 (v, v_y, ω), see [`HM3D/Svg-v0`](environments.md#hm3dsvg-v0-continuous).
 
 Every number in a preset (JSON) has a source: `official` with a URL, or `estimated` with the
-method. Footprints of 8 robots are real sections of the manufacturers' URDF; JetAuto Pro is a
-32.4 × 26 cm box. Robots are grouped into height classes (`h36`, `h63`, `h145`) that decide
+method. Footprints of 11 robots are real sections of the manufacturers' URDF; JetAuto Pro is a
+32.4 × 26 cm box. Sizes (length × width): Dingo-D 0.55 × 0.52 m, Ridgeback 0.93 × 0.79 m
+(0.96 × 0.79 official, bumper lights not in the URDF), Husky A200 0.99 × 0.67 m. Robots are grouped into height classes (`h36`, `h63`, `h145`) that decide
 which obstacles block them (a TurtleBot passes under a table, TIAGo does not).
 
 ```bash

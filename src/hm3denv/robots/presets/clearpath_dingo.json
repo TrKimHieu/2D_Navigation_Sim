@@ -1,0 +1,122 @@
+{
+ "schema_version": "1.0",
+ "id": "clearpath_dingo",
+ "name": "Clearpath Dingo-D (differential)",
+ "footprint": {
+  "type": "polygon",
+  "points": [
+   [
+    0.1734,
+    -0.2586
+   ],
+   [
+    0.2754,
+    -0.1576
+   ],
+   [
+    0.2754,
+    0.1574
+   ],
+   [
+    0.1734,
+    0.2584
+   ],
+   [
+    -0.1736,
+    0.2584
+   ],
+   [
+    -0.2756,
+    0.1574
+   ],
+   [
+    -0.2756,
+    0.0674
+   ],
+   [
+    -0.2736,
+    0.0664
+   ],
+   [
+    -0.2736,
+    -0.0666
+   ],
+   [
+    -0.2756,
+    -0.0676
+   ],
+   [
+    -0.2756,
+    -0.1576
+   ],
+   [
+    -0.1736,
+    -0.2586
+   ]
+  ]
+ },
+ "height": 0.11,
+ "height_class": "h36",
+ "drive": "differential",
+ "limits": {
+  "v_max": 1.3,
+  "v_min": -1.3,
+  "vy_max": 0.0,
+  "w_max": 1.0
+ },
+ "lidar": {
+  "model": "SLAMTEC RPLIDAR A1M8",
+  "range_min": 0.15,
+  "range_max": 12.0,
+  "fov": 6.2832,
+  "beams": 360
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://github.com/dingo-cpr/dingo/blob/noetic-devel/dingo_description/urdf/dingo.urdf.xacro",
+   "method": "all URDF visual geometry (joints = 0) projected onto the floor of frame 'base_link' at 1 mm, outer contour, simplified by 1 mm (hm3d robots import-urdf)"
+  },
+  "height": {
+   "kind": "official",
+   "url": "https://docs.clearpathrobotics.com/docs_robots/legacy/ros1_robots/indoor_robots/dingo/user_manual_dingo",
+   "note": "Dingo-D: 110 mm chassis, without payload"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://docs.clearpathrobotics.com/docs_robots/legacy/ros1_robots/indoor_robots/dingo/user_manual_dingo",
+   "note": "1.3 m/s"
+  },
+  "limits.v_min": {
+   "kind": "estimated",
+   "method": "The manufacturer only publishes the maximum speed; the maximum reverse speed is assumed equal to it."
+  },
+  "limits.vy_max": {
+   "kind": "official",
+   "url": "https://docs.clearpathrobotics.com/docs_robots/legacy/ros1_robots/indoor_robots/dingo/user_manual_dingo",
+   "note": "Dingo-D: differential drive (Dingo-O is the omnidirectional version)"
+  },
+  "limits.w_max": {
+   "kind": "estimated",
+   "method": "The manufacturer does not publish the maximum angular velocity; a conservative 1.0 rad/s is used, in line with TurtleBot3 Waffle Pi (1.82) and TurtleBot 4 (1.90). The kinematic bound 2*v_max/track width is not used because it far exceeds the practical safe limit."
+  },
+  "lidar": {
+   "kind": "estimated",
+   "method": "The robot ships without a LiDAR (the manual lists only battery status, wheel odometry, motor currents and an IMU); the common 2D LiDAR RPLIDAR A1M8 is assumed (0.15-12 m, 360 degrees per the SLAMTEC datasheet)."
+  },
+  "lidar.beams": {
+   "kind": "estimated",
+   "method": "1 beam per degree, close to the ~1 degree angular resolution of low-cost 2D LiDARs; the environment resamples to n_beams beams."
+  },
+  "footprint_simple": {
+   "kind": "official",
+   "url": "https://docs.clearpathrobotics.com/docs_robots/legacy/ros1_robots/indoor_robots/dingo/user_manual_dingo",
+   "note": "Dingo-D: 551 x 517 x 110 mm (Dingo-O: 686 x 517 x 114 mm)"
+  }
+ },
+ "footprint_simple": {
+  "type": "rectangle",
+  "length": 0.551,
+  "width": 0.517
+ }
+}

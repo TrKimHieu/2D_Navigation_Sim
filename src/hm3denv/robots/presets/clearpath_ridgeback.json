@@ -1,0 +1,261 @@
+{
+ "schema_version": "1.0",
+ "id": "clearpath_ridgeback",
+ "name": "Clearpath Ridgeback (mecanum)",
+ "footprint": {
+  "type": "polygon",
+  "points": [
+   [
+    -0.3612,
+    -0.3676
+   ],
+   [
+    -0.3462,
+    -0.3776
+   ],
+   [
+    -0.3222,
+    -0.3886
+   ],
+   [
+    -0.3042,
+    -0.3936
+   ],
+   [
+    -0.2382,
+    -0.3946
+   ],
+   [
+    -0.2352,
+    -0.3966
+   ],
+   [
+    0.2348,
+    -0.3966
+   ],
+   [
+    0.2378,
+    -0.3946
+   ],
+   [
+    0.2928,
+    -0.3946
+   ],
+   [
+    0.3048,
+    -0.3936
+   ],
+   [
+    0.3258,
+    -0.3876
+   ],
+   [
+    0.3458,
+    -0.3776
+   ],
+   [
+    0.3698,
+    -0.3596
+   ],
+   [
+    0.3798,
+    -0.3496
+   ],
+   [
+    0.3908,
+    -0.3346
+   ],
+   [
+    0.3998,
+    -0.3166
+   ],
+   [
+    0.4068,
+    -0.2956
+   ],
+   [
+    0.4628,
+    -0.0336
+   ],
+   [
+    0.4658,
+    -0.0126
+   ],
+   [
+    0.4658,
+    0.0134
+   ],
+   [
+    0.4638,
+    0.0284
+   ],
+   [
+    0.4088,
+    0.2874
+   ],
+   [
+    0.3998,
+    0.3164
+   ],
+   [
+    0.3908,
+    0.3344
+   ],
+   [
+    0.3798,
+    0.3494
+   ],
+   [
+    0.3608,
+    0.3674
+   ],
+   [
+    0.3458,
+    0.3774
+   ],
+   [
+    0.3258,
+    0.3874
+   ],
+   [
+    0.3048,
+    0.3934
+   ],
+   [
+    0.2868,
+    0.3954
+   ],
+   [
+    -0.2872,
+    0.3954
+   ],
+   [
+    -0.3042,
+    0.3934
+   ],
+   [
+    -0.3252,
+    0.3874
+   ],
+   [
+    -0.3462,
+    0.3774
+   ],
+   [
+    -0.3612,
+    0.3674
+   ],
+   [
+    -0.3792,
+    0.3494
+   ],
+   [
+    -0.3912,
+    0.3334
+   ],
+   [
+    -0.4012,
+    0.3134
+   ],
+   [
+    -0.4072,
+    0.2954
+   ],
+   [
+    -0.4632,
+    0.0334
+   ],
+   [
+    -0.4662,
+    0.0134
+   ],
+   [
+    -0.4662,
+    -0.0126
+   ],
+   [
+    -0.4642,
+    -0.0286
+   ],
+   [
+    -0.4092,
+    -0.2866
+   ],
+   [
+    -0.4002,
+    -0.3156
+   ],
+   [
+    -0.3912,
+    -0.3336
+   ],
+   [
+    -0.3792,
+    -0.3496
+   ]
+  ]
+ },
+ "height": 0.311,
+ "height_class": "h36",
+ "drive": "omnidirectional",
+ "limits": {
+  "v_max": 1.1,
+  "v_min": -1.1,
+  "vy_max": 1.1,
+  "w_max": 1.0
+ },
+ "lidar": {
+  "model": "Hokuyo UST-10LX",
+  "range_min": 0.06,
+  "range_max": 10.0,
+  "fov": 4.7124,
+  "beams": 270
+ },
+ "sources": {
+  "footprint": {
+   "kind": "official",
+   "url": "https://github.com/ridgeback/ridgeback/blob/melodic-devel/ridgeback_description/urdf/ridgeback.urdf.xacro",
+   "method": "all URDF visual geometry (joints = 0) projected onto the floor of frame 'base_link' at 1 mm, outer contour, simplified by 1 mm (hm3d robots import-urdf)"
+  },
+  "height": {
+   "kind": "official",
+   "url": "https://clearpathrobotics.com/ridgeback-indoor-robot-platform/",
+   "note": "311 mm in the spec table (the feature text says 30 cm)"
+  },
+  "limits.v_max": {
+   "kind": "official",
+   "url": "https://clearpathrobotics.com/ridgeback-indoor-robot-platform/"
+  },
+  "limits.v_min": {
+   "kind": "estimated",
+   "method": "The manufacturer only publishes the maximum speed; the maximum reverse speed is assumed equal to it."
+  },
+  "limits.vy_max": {
+   "kind": "estimated",
+   "method": "Mecanum; taken equal to v_max."
+  },
+  "limits.w_max": {
+   "kind": "estimated",
+   "method": "The manufacturer does not publish the maximum angular velocity; a conservative 1.0 rad/s is used, in line with TurtleBot3 Waffle Pi (1.82) and TurtleBot 4 (1.90). The kinematic bound 2*v_max/track width is not used because it far exceeds the practical safe limit."
+  },
+  "lidar": {
+   "kind": "official",
+   "url": "https://github.com/ridgeback/ridgeback/tree/melodic-devel/ridgeback_description/meshes",
+   "note": "the standard front laser of the description package is a Hokuyo UST-10LX (0.06-10 m, 270 degrees)"
+  },
+  "lidar.beams": {
+   "kind": "estimated",
+   "method": "1 beam per degree, close to the ~1 degree angular resolution of low-cost 2D LiDARs; the environment resamples to n_beams beams."
+  },
+  "footprint_simple": {
+   "kind": "official",
+   "url": "https://clearpathrobotics.com/ridgeback-indoor-robot-platform/",
+   "note": "960 x 793 x 311 mm"
+  }
+ },
+ "footprint_simple": {
+  "type": "rectangle",
+  "length": 0.96,
+  "width": 0.793
+ }
+}
